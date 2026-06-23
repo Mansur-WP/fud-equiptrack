@@ -201,10 +201,19 @@
             <li class="nav-item">
               <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">Home</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link {% if 'equipment' in request.path %}active{% endif %}" href="{% url 'equipment:list' %}">Equipment</a>
+            </li>
             {% if user.is_authenticated %}
+              <li class="nav-item">
+                <a class="nav-link {% if 'rentals' in request.path %}active{% endif %}" href="{% url 'rentals:list' %}">Requests</a>
+              </li>
               {% if user.role == 'ADMIN' %}
                 <li class="nav-item">
                   <a class="nav-link {% if 'admin-dashboard' in request.path %}active{% endif %}" href="{% url 'accounts:admin_dashboard' %}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link {% if 'rentals/pending' in request.path %}active{% endif %}" href="{% url 'rentals:pending_list' %}">Pending Approvals</a>
                 </li>
               {% elif user.role == 'STUDENT' %}
                 <li class="nav-item">

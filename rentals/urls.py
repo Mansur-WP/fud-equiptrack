@@ -1,13 +1,14 @@
 from django.urls import path
-
 from . import views
-
 
 app_name = "rentals"
 
 urlpatterns = [
-    # Placeholder route (no models/views implemented yet)
-    path("", views.placeholder, name="placeholder"),
+    path("", views.RentalRequestListView.as_view(), name="list"),
+    path("pending/", views.PendingRequestsListView.as_view(), name="pending_list"),
+    path("create/", views.RentalRequestCreateView.as_view(), name="create"),
+    path("<int:pk>/", views.RentalRequestDetailView.as_view(), name="detail"),
+    path("<int:pk>/approve/", views.ApproveRequestView.as_view(), name="approve"),
+    path("<int:pk>/reject/", views.RejectRequestView.as_view(), name="reject"),
 ]
-
 

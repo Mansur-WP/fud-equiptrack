@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Request Equipment - FUD-IERMS{% endblock title %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'rentals:list' %}" class="text-decoration-none">Requests</a></li>
+    <li class="breadcrumb-item active" aria-current="page">New Request</li>
+  </ol>
+</nav>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-md-10 col-lg-8">
+    <div class="card border-0 shadow-sm p-3">
+      <div class="card-header border-0 bg-transparent pb-0">
+        <div class="d-flex align-items-center gap-3 mb-1">
+          <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle" style="width: 48px; height: 48px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-calendar-plus" viewBox="0 0 16 16">
+              <path d="M8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z"/>
+              <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="h4 fw-bold text-dark mb-0">Request Equipment</h2>
+            <p class="text-secondary small mb-0">Fill in the form below to submit a new equipment rental request.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-body pt-4">
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger small py-2 mb-3">
+            {% for error in form.non_field_errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-md-8 mb-3">
+              <label class="form-label fw-semibold" for="{{ form.equipment.id_for_label }}">
+                {{ form.equipment.label }} <span class="text-danger">*</span>
+              </label>
+              {{ form.equipment }}
+              {% for error in form.equipment.errors %}
+                <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+              {% endfor %}
+            </div>
+            
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-semibold" for="{{ form.quantity.id_for_label }}">
+                {{ form.quantity.label }} <span class="text-danger">*</span>
+              </label>
+              {{ form.quantity }}
+              {% for error in form.quantity.errors %}
+                <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold" for="{{ form.request_date.id_for_label }}">
+                {{ form.request_date.label }} <span class="text-danger">*</span>
+              </label>
+              {{ form.request_date }}
+              {% for error in form.request_date.errors %}
+                <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold" for="{{ form.expected_return_date.id_for_label }}">
+                {{ form.expected_return_date.label }} <span class="text-danger">*</span>
+              </label>
+              {{ form.expected_return_date }}
+              {% for error in form.expected_return_date.errors %}
+                <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-12 mb-3">
+              <label class="form-label fw-semibold" for="{{ form.purpose.id_for_label }}">
+                {{ form.purpose.label }} <span class="text-danger">*</span>
+              </label>
+              {{ form.purpose }}
+              {% if form.purpose.help_text %}
+                <div class="form-text text-secondary small">{{ form.purpose.help_text }}</div>
+              {% endif %}
+              {% for error in form.purpose.errors %}
+                <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top border-light mt-2">
+            <a href="{% url 'rentals:list' %}" class="btn btn-light px-4 py-2">Cancel</a>
+            <button type="submit" class="btn btn-primary px-5 py-2">Submit Request</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

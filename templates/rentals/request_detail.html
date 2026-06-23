@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Request Details - FUD-IERMS{% endblock title %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'rentals:list' %}" class="text-decoration-none">Requests</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Details</li>
+  </ol>
+</nav>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="card border-0 shadow-sm p-4">
+      <div class="card-body">
+        
+        <!-- Header -->
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start mb-4 gap-3">
+          <div>
+            <h1 class="h3 fw-bold text-dark mb-1">Rental Request Details</h1>
+            <p class="text-secondary mb-0">Submitted on {{ rental_request.created_at|date:"F d, Y \a\t H:i" }}</p>
+          </div>
+          <div>
+            {% if rental_request.status == 'PENDING' %}
+              <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 fs-6">Pending Review</span>
+            {% elif rental_request.status == 'APPROVED' %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6">Approved</span>
+            {% else %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 fs-6">Rejected</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <hr class="border-light mb-4">
+
+        <!-- Requester Info (Visible to Admins) -->
+        {% if request.user.role == 'ADMIN' %}
+          <h5 class="fw-bold text-dark mb-3">Requester Information</h5>
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6">
+              <label class="text-secondary small fw-bold d-block mb-1">Name</label>
+              <span class="fw-semibold text-dark">{{ rental_request.requester.get_full_name|default:rental_request.requester.username }}</span>
+            </div>
+            <div class="col-sm-6">
+              <label class="text-secondary small fw-bold d-block mb-1">Role</label>
+              <span class="badge bg-light text-dark border">{{ rental_request.requester.get_role_display }}</span>
+            </div>
+            <div class="col-sm-6">
+              <label class="text-secondary small fw-bold d-block mb-1">Email</label>
+              <span class="fw-semibold text-dark">{{ rental_request.requester.email }}</span>
+            </div>
+            <div class="col-sm-6">
+              <label class="text-secondary small fw-bold d-block mb-1">Phone</label>
+              <span class="fw-semibold text-dark">{{ rental_request.requester.phone|default:"N/A" }}</span>
+            </div>
+          </div>
+          <hr class="border-light mb-4">
+        {% endif %}
+
+        <!-- Equipment Details -->
+        <h5 class="fw-bold text-dark mb-3">Equipment Details</h5>
+        <div class="row g-3 mb-4">
+          <div class="col-sm-6">
+            <label class="text-secondary small fw-bold d-block mb-1">Item Requested</label>
+            <a href="{% url 'equipment:detail' rental_request.equipment.pk %}" class="fw-bold text-primary text-decoration-none">
+              {{ rental_request.equipment.name }}
+            </a>
+          </div>
+          <div class="col-sm-6">
+            <label class="text-secondary small fw-bold d-block mb-1">Serial Number</label>
+            <span class="fw-semibold text-dark font-monospace">{{ rental_request.equipment.serial_number }}</span>
+          </div>
+          <div class="col-sm-6">
+            <label class="text-secondary small fw-bold d-block mb-1">Quantity Requested</label>
+            <span class="fw-bold text-dark fs-5">{{ rental_request.quantity }}</span>
+          </div>
+        </div>
+
+        <hr class="border-light mb-4">
+
+        <!-- Request Details -->
+        <h5 class="fw-bold text-dark mb-3">Rental Schedule & Purpose</h5>
+        <div class="row g-3 mb-4">
+          <div class="col-sm-6">
+            <label class="text-secondary small fw-bold d-block mb-1">Request Date</label>
+            <span class="fw-semibold text-dark">{{ rental_request.request_date|date:"F d, Y" }}</span>
+          </div>
+          <div class="col-sm-6">
+            <label class="text-secondary small fw-bold d-block mb-1">Expected Return Date</label>
+            <span class="fw-semibold text-dark">{{ rental_request.expected_return_date|date:"F d, Y" }}</span>
+          </div>
+          <div class="col-12">
+            <label class="text-secondary small fw-bold d-block mb-1">Purpose</label>
+            <div class="p-3 bg-light rounded-3 text-dark">
+              {{ rental_request.purpose|linebreaksbr }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Remarks -->
+        {% if rental_request.remarks or request.user.role == 'ADMIN' %}
+          <hr class="border-light mb-4">
+          <h5 class="fw-bold text-dark mb-3">Admin Remarks</h5>
+          {% if rental_request.remarks %}
+            <div class="p-3 bg-light border-start border-4 {% if rental_request.status == 'APPROVED' %}border-success{% elif rental_request.status == 'REJECTED' %}border-danger{% else %}border-warning{% endif %} rounded-end text-dark">
+              {{ rental_request.remarks|linebreaksbr }}
+            </div>
+          {% else %}
+            <p class="text-secondary fst-italic">No remarks provided yet.</p>
+          {% endif %}
+        {% endif %}
+
+        <!-- Footer Actions -->
+        <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top border-light">
+          <a href="javascript:history.back()" class="btn btn-outline-secondary px-4">
+            &larr; Back
+          </a>
+          
+          {% if request.user.role == 'ADMIN' and rental_request.status == 'PENDING' %}
+            <div class="d-flex gap-2">
+              <a href="{% url 'rentals:approve' rental_request.pk %}" class="btn btn-success px-4 d-flex align-items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
+                  <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                </svg>
+                Approve
+              </a>
+              <a href="{% url 'rentals:reject' rental_request.pk %}" class="btn btn-danger px-4 d-flex align-items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                  <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                </svg>
+                Reject
+              </a>
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
