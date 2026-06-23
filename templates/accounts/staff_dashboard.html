@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Dashboard - FUD-IERMS{% endblock title %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm p-4 bg-dark text-white" style="background: var(--dark-gradient) !important;">
+      <div class="card-body py-3">
+        <h1 class="h3 fw-bold mb-1">Staff Dashboard</h1>
+        <p class="text-white-50 mb-0">Manage departmental equipment, request faculty resources, and view assigned items.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Staff Stats Grid -->
+<div class="row g-4 mb-5">
+  <div class="col-12 col-md-6">
+    <div class="card border-0 shadow-sm p-3">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <span class="text-secondary small fw-bold d-block mb-1">Items Borrowed by Me</span>
+          <h3 class="fw-bold mb-0 text-dark">0</h3>
+        </div>
+        <div class="bg-success-subtle text-success rounded px-3 py-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-briefcase" viewBox="0 0 16 16">
+            <path d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5m1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0M1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6">
+    <div class="card border-0 shadow-sm p-3">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <span class="text-secondary small fw-bold d-block mb-1">Pending Approval Requests</span>
+          <h3 class="fw-bold mb-0 text-dark">0</h3>
+        </div>
+        <div class="bg-warning-subtle text-warning rounded px-3 py-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-file-earmark-text" viewBox="0 0 16 16">
+            <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"/>
+            <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1-2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12 col-lg-8">
+    <div class="card border-0 shadow-sm p-4 mb-4">
+      <h3 class="h5 fw-bold mb-3 text-dark">Assigned Departmental Equipment</h3>
+      <div class="text-center py-5 text-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-box-seam text-secondary-subtle mb-3" viewBox="0 0 16 16">
+          <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.962L10.404 2zm3.564 1.426L5.564 5.062 8 6.062l6.186-2.5-2.436-.975zm-.508 5.614L11 8.5V15h2.148c.39 0 .74-.24.882-.604L15 11V4zM7.5 15V8.5L2.852 6.641 1 7.39v3.61c0 .37.1.72.28 1.03zM2 3.89V1.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v13a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V8.11L7.5 10v5h1v-5l5.5-1.89V3.89L8 6z"/>
+        </svg>
+        <p class="mb-1">No equipment assigned to your department.</p>
+        <small class="text-muted">Awaiting equipment provisioning from the ICT administrator.</small>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-12 col-lg-4">
+    <div class="card border-0 shadow-sm p-4">
+      <h3 class="h5 fw-bold mb-3 text-dark">Staff Actions</h3>
+      <div class="d-grid gap-2">
+        <a class="btn btn-primary text-start px-3 py-2.5 d-flex align-items-center gap-2" href="#">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+          </svg>
+          Request Departmental Device
+        </a>
+        <a class="btn btn-outline-dark text-start px-3 py-2.5 d-flex align-items-center gap-2" href="{% url 'accounts:profile' %}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+          </svg>
+          View / Edit My Profile
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

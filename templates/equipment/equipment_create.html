@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Add Equipment - FUD-IERMS{% endblock title %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'equipment:list' %}" class="text-decoration-none">Equipment</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Add Equipment</li>
+  </ol>
+</nav>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-md-10 col-lg-8">
+    <div class="card border-0 shadow-sm p-3">
+      <div class="card-header border-0 bg-transparent pb-0">
+        <div class="d-flex align-items-center gap-3 mb-1">
+          <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle" style="width: 48px; height: 48px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="h4 fw-bold text-dark mb-0">Add New Equipment</h2>
+            <p class="text-secondary small mb-0">Fill in the details to register a new piece of ICT equipment.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-body pt-4">
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger small py-2 mb-3">
+            {% for error in form.non_field_errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          <div class="row">
+            {% for field in form.visible_fields %}
+              <div class="{% if field.name == 'description' or field.name == 'image' %}col-12{% else %}col-md-6{% endif %} mb-3">
+                <label class="form-label d-flex justify-content-between" for="{{ field.id_for_label }}">
+                  <span>{{ field.label }}</span>
+                  {% if field.field.required %}
+                    <span class="text-danger small">*</span>
+                  {% endif %}
+                </label>
+                {{ field }}
+                {% if field.help_text %}
+                  <div class="form-text text-secondary small">{{ field.help_text|safe }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top border-light mt-2">
+            <a href="{% url 'equipment:list' %}" class="btn btn-light px-4 py-2">Cancel</a>
+            <button type="submit" class="btn btn-primary px-5 py-2">Add Equipment</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

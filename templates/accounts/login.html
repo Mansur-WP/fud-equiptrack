@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Login - FUD-IERMS{% endblock title %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: calc(100vh - 240px);">
+  <div class="col-12 col-sm-10 col-md-7 col-lg-5 col-xl-4 py-4">
+    <div class="card border-0 shadow-lg p-3">
+      <div class="card-body">
+        <div class="text-center mb-4">
+          <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle mb-3" style="width: 60px; height: 60px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-shield-lock" viewBox="0 0 16 16">
+              <path d="M5.338 1.59a6.1 6.1 0 0 0-2.837.856.48.48 0 0 0-.228.389v4.287c0 3.29 1.82 6.155 4.7 7.004a8 8 0 0 0 1.026.254.5.5 0 0 0 .314-.254c2.88-.849 4.7-3.713 4.7-7.004V2.835a.48.48 0 0 0-.228-.389 6.1 6.1 0 0 0-2.837-.855 8 8 0 0 0-4.876.19M8 0c.69 0 1.38.08 2.05.242a9 9 0 0 1 3.593 1.503c.27.186.357.548.357.873V6.5c0 3.82-2.133 7.155-5.5 8.136a8 8 0 0 1-2.5 0C3.133 13.655 1 10.32 1 6.5V2.618c0-.325.087-.687.357-.873A9 9 0 0 1 4.95.24 9 9 0 0 1 8 0"/>
+              <path d="M9.5 6.5a1.5 1.5 0 0 0-1.5-1.5h-1A1.5 1.5 0 0 0 5.5 6.5v2A1.5 1.5 0 0 0 7 10h1a1.5 1.5 0 0 0 1.5-1.5zM6.5 6.5A.5.5 0 0 1 7 6h1a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H7a.5.5 0 0 1-.5-.5z"/>
+            </svg>
+          </div>
+          <h2 class="h3 fw-bold text-dark mb-1">Welcome Back</h2>
+          <p class="text-secondary small">Access the ICT Equipment Rental system</p>
+        </div>
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger shadow-sm small py-2 mb-3">
+            {% for error in form.non_field_errors %}
+              <div class="d-flex align-items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+                </svg>
+                <span>{{ error }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          {% for field in form.visible_fields %}
+            <div class="mb-3">
+              <label class="form-label d-flex justify-content-between" for="{{ field.id_for_label }}">
+                <span>{{ field.label }}</span>
+                {% if field.field.required %}
+                  <span class="text-danger small">*</span>
+                {% endif %}
+              </label>
+              {{ field }}
+              {% if field.help_text %}
+                <div class="form-text text-secondary small">{{ field.help_text }}</div>
+              {% endif %}
+              {% for error in field.errors %}
+                <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+
+          <div class="mt-4 mb-3">
+            <button type="submit" class="btn btn-primary w-100 py-2.5 fs-6">
+              Sign In
+            </button>
+          </div>
+        </form>
+
+        <div class="text-center mt-4 pt-2 border-top border-light">
+          <p class="text-secondary small mb-0">
+            Don't have an account? 
+            <a href="{% url 'accounts:register' %}" class="fw-bold text-decoration-none text-primary">Register here</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

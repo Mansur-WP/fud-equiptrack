@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Register - FUD-IERMS{% endblock title %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-10 col-lg-8 col-xl-7 py-4">
+    <div class="card border-0 shadow-lg p-3">
+      <div class="card-body">
+        <div class="text-center mb-4">
+          <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle mb-3" style="width: 60px; height: 60px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-person-plus" viewBox="0 0 16 16">
+              <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H1s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
+              <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5"/>
+            </svg>
+          </div>
+          <h2 class="h3 fw-bold text-dark mb-1">Create Account</h2>
+          <p class="text-secondary small">Register to get started with equipment rentals</p>
+        </div>
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger shadow-sm small py-2 mb-4">
+            {% for error in form.non_field_errors %}
+              <div class="d-flex align-items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+                </svg>
+                <span>{{ error }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          <div class="row">
+            {% for field in form.visible_fields %}
+              <!-- Grid distribution for standard layout -->
+              <div class="{% if field.name == 'username' or field.name == 'email' or field.name == 'password1' or field.name == 'password2' or field.name == 'profile_image' %}col-12{% else %}col-md-6{% endif %} mb-3">
+                <label class="form-label d-flex justify-content-between" for="{{ field.id_for_label }}">
+                  <span>{{ field.label }}</span>
+                  {% if field.field.required %}
+                    <span class="text-danger small">*</span>
+                  {% endif %}
+                </label>
+                {{ field }}
+                {% if field.help_text %}
+                  <div class="form-text text-secondary small">{{ field.help_text|safe }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="mt-4 mb-3">
+            <button type="submit" class="btn btn-primary w-100 py-2.5 fs-6">
+              Create My Account
+            </button>
+          </div>
+        </form>
+
+        <div class="text-center mt-4 pt-2 border-top border-light">
+          <p class="text-secondary small mb-0">
+            Already have an account? 
+            <a href="{% url 'accounts:login' %}" class="fw-bold text-decoration-none text-primary">Login here</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - FUD-IERMS{% endblock title %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Left Side: Profile Card -->
+  <div class="col-12 col-md-4 col-lg-4">
+    <div class="card border-0 shadow-sm text-center py-4">
+      <div class="card-body">
+        <div class="mb-3 position-relative d-inline-block">
+          {% if user.profile_image %}
+            <img src="{{ user.profile_image.url }}" alt="{{ user.username }}" class="rounded-circle img-thumbnail border-2 border-primary" style="width: 140px; height: 140px; object-fit: cover;">
+          {% else %}
+            <div class="avatar-placeholder rounded-circle mx-auto d-flex align-items-center justify-content-center border-2 border-primary" style="width: 140px; height: 140px; font-size: 3rem; background: var(--primary-gradient);">
+              {{ user.username|slice:":1"|upper }}
+            </div>
+          {% endif %}
+        </div>
+        
+        <h4 class="fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h4>
+        <p class="text-secondary small mb-3">@{{ user.username }}</p>
+        
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill mb-4 fs-7">
+          {{ user.get_role_display }}
+        </span>
+
+        <hr class="my-4 border-light">
+
+        <div class="text-start">
+          <div class="mb-3">
+            <label class="text-secondary small d-block mb-1">Email Address</label>
+            <span class="fw-semibold text-dark">{{ user.email }}</span>
+          </div>
+          <div class="mb-3">
+            <label class="text-secondary small d-block mb-1">Date Joined</label>
+            <span class="fw-semibold text-dark">{{ user.date_joined|date:"F d, Y" }}</span>
+          </div>
+          <div class="mb-0">
+            <label class="text-secondary small d-block mb-1">Account Status</label>
+            {% if user.is_active %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+            {% else %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Inactive</span>
+            {% endif %}
+            {% if user.is_staff %}
+              <span class="badge bg-info-subtle text-info border border-info-subtle">Staff Privilege</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Edit Form -->
+  <div class="col-12 col-md-8 col-lg-8">
+    <div class="card border-0 shadow-sm p-3">
+      <div class="card-header border-0 pb-0 bg-transparent">
+        <h3 class="h5 fw-bold text-dark mb-1">Edit Profile Details</h3>
+        <p class="text-secondary small mb-0">Update your personal, contact, and academic details below.</p>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger small py-2 mb-3">
+              {% for error in form.non_field_errors %}
+                <div>{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="row">
+            {% for field in form.visible_fields %}
+              <div class="{% if field.name == 'profile_image' %}col-12{% else %}col-md-6{% endif %} mb-3">
+                <label class="form-label d-flex justify-content-between" for="{{ field.id_for_label }}">
+                  <span>{{ field.label }}</span>
+                  {% if field.field.required %}
+                    <span class="text-danger small">*</span>
+                  {% endif %}
+                </label>
+                {{ field }}
+                {% if field.help_text %}
+                  <div class="form-text text-secondary small">{{ field.help_text|safe }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="mt-4 pt-3 border-top border-light d-flex justify-content-end gap-2">
+            <a href="{% url 'home' %}" class="btn btn-light px-4 py-2 border-light">Cancel</a>
+            <button type="submit" class="btn btn-primary px-5 py-2">
+              Save Profile Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

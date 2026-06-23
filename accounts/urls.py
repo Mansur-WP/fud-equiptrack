@@ -6,8 +6,28 @@ from . import views
 app_name = "accounts"
 
 urlpatterns = [
-    # Placeholder route (no models/views implemented yet)
-    path("", views.placeholder, name="placeholder"),
+    path("register/", views.RegisterView.as_view(), name="register"),
+    path("login/", views.CustomLoginView.as_view(), name="login"),
+    path("logout/", views.CustomLogoutView.as_view(), name="logout"),
+    path("profile/", views.ProfileView.as_view(), name="profile"),
+
+    # Placeholder dashboards for role-based redirects.
+    path(
+        "admin-dashboard/",
+        views.AdminDashboardPlaceholderView.as_view(),
+        name="admin_dashboard",
+    ),
+    path(
+        "student-dashboard/",
+        views.StudentDashboardPlaceholderView.as_view(),
+        name="student_dashboard",
+    ),
+    path(
+        "staff-dashboard/",
+        views.StaffDashboardPlaceholderView.as_view(),
+        name="staff_dashboard",
+    ),
 ]
+
 
 
