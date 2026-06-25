@@ -95,7 +95,7 @@ class AdminRequiredMixin(UserPassesTestMixin):
 
     def test_func(self):
         user = self.request.user
-        return user.is_authenticated and user.role == User.Role.ADMIN
+        return user.is_authenticated and (user.role == User.Role.ADMIN or user.is_superuser)
 
 
 class PendingRequestsListView(LoginRequiredMixin, AdminRequiredMixin, ListView):

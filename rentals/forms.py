@@ -47,12 +47,12 @@ class RentalRequestForm(BootstrapFormMixin, forms.ModelForm):
                     f"'{equipment.name}'.",
                 )
 
-        # Validate return date is after request date
+        # Validate return date is not before request date
         if request_date and expected_return_date:
-            if expected_return_date <= request_date:
+            if expected_return_date < request_date:
                 self.add_error(
                     "expected_return_date",
-                    "Expected return date must be after the request date.",
+                    "Expected return date cannot be before the request date.",
                 )
 
         return cleaned_data

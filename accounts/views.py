@@ -33,7 +33,7 @@ class CustomLoginView(LoginView):
     def get_success_url(self):
         user = self.request.user
         role = user.role
-        if role == User.Role.ADMIN:
+        if role == User.Role.ADMIN or user.is_superuser:
             return reverse("accounts:admin_dashboard")
         elif role == User.Role.STUDENT:
             return reverse("accounts:student_dashboard")
@@ -93,17 +93,46 @@ class ProfileView(LoginRequiredMixin, UpdateView):
         return super().form_invalid(form)
 
 
-# Temporary placeholder dashboards so role redirects work.
+# Dashboard Views
+from equipment.models import Equipment
+from rentals.models import RentalRequest
+
 class AdminDashboardPlaceholderView(LoginRequiredMixin, TemplateView):
     template_name = "accounts/admin_dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["total_users"] = User.objects.count()
+        context["total_equipment"] = Equipment.objects.count()
+        context["pending_requests"] = RentalRequest.objects.filter(status=RentalRequest.Status.PENDING).count()
+        context["active_rentals"] = RentalRequest.objects.filter(status=RentalRequest.Status.APPROVED).count()
+        
+        context["recent_requests"] = RentalRequest.objects.select_related('requester', 'equipment').order_by('-created_at')[:5]
+        return context
 
 
 class StudentDashboardPlaceholderView(LoginRequiredMixin, TemplateView):
     template_name = "accounts/student_dashboard.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context["active_rentals_count"] = RentalRequest.objects.filter(requester=user, status=RentalRequest.Status.APPROVED).count()
+        context["pending_requests_count"] = RentalRequest.objects.filter(requester=user, status=RentalRequest.Status.PENDING).count()
+        context["active_rentals"] = RentalRequest.objects.filter(requester=user, status=RentalRequest.Status.APPROVED).order_by('-updated_at')[:5]
+        return context
+
 
 class StaffDashboardPlaceholderView(LoginRequiredMixin, TemplateView):
     template_name = "accounts/staff_dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context["active_rentals_count"] = RentalRequest.objects.filter(requester=user, status=RentalRequest.Status.APPROVED).count()
+        context["pending_requests_count"] = RentalRequest.objects.filter(requester=user, status=RentalRequest.Status.PENDING).count()
+        context["active_rentals"] = RentalRequest.objects.filter(requester=user, status=RentalRequest.Status.APPROVED).order_by('-updated_at')[:5]
+        return context
 
 
 

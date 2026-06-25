@@ -38,6 +38,7 @@ class RegisterForm(BootstrapFormMixin, UserCreationForm):
     class Meta:
         model = User
         fields = (
+            "role",
             "username",
             "email",
             "first_name",
@@ -47,6 +48,14 @@ class RegisterForm(BootstrapFormMixin, UserCreationForm):
             "department",
             "profile_image",
         )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Limit the role choices so users can't register as ADMIN
+        self.fields['role'].choices = [
+            (User.Role.STUDENT.value, User.Role.STUDENT.label),
+            (User.Role.STAFF.value, User.Role.STAFF.label),
+        ]
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
