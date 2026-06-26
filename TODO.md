@@ -1,14 +1,7 @@
-# TODO - Rental lifecycle testing & fixes
+- [ ] Fix Django startup error: missing `AdminRequestManagementListView` in `rentals/views.py` referenced by `rentals/urls.py`.
+- [ ] Add `AdminRequestManagementListView` implementation using `annotate_request_management_queryset`.
+- [ ] Ensure filters in the view match the template inputs (status, equipment_category, date_from/to, request_id, student_name, equipment_name).
+- [ ] Add pagination and template context variables required by `templates/rentals/admin_request_management.html` (status_choices, equipment_categories, query_params).
+- [ ] Run `python manage.py runserver` (or `python manage.py check`) to confirm the error is resolved.
 
-- [ ] Add end-to-end rental lifecycle integration tests (Admin create equipment -> Student request -> PENDING -> Admin approve -> issue -> stock decrement -> ACTIVE rental created -> Admin return -> stock increment -> RETURNED status -> returned rentals removed from active list).
-- [ ] Add regression tests for:
-  - [ ] No duplicate issuance for same RentalRequest
-  - [ ] No duplicate returns for same Rental
-  - [ ] Stock never goes negative
-  - [ ] Returned rentals do not appear in active rentals list
-  - [ ] Role-based restrictions on returns (Student/Staff blocked, Admin allowed)
-- [ ] Ensure a “process return” workflow exists (view/form/url) and is protected so only ADMIN can return.
-- [ ] Fix any failing tests / service bugs (especially in rentals/services.py return_equipment).
-- [ ] Confirm Django system check passes: `python manage.py check`.
-- [ ] Confirm tests pass: `python manage.py test rentals --verbosity 2`.
 

@@ -1,33 +1,340 @@
-{% extends "base.html" %}
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ICT Equipment Rental Management System - FUD</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-{% block title %}Home - ICT Equipment Rental Management System{% endblock title %}
+    <style>
+        :root {
+            --primary: #2563EB;
+            --primary-hover: #1D4ED8;
+            --secondary: #0F172A;
+            --bg-color: #F8FAFC;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+        }
 
-{% block content %}
-<div class="row justify-content-center align-items-center py-5">
-  <div class="col-12 col-lg-8 text-center py-4">
-    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill mb-3 fw-bold">Federal University Dutse</span>
-    <h1 class="display-4 fw-extrabold mb-3 tracking-tight" style="font-weight: 800; letter-spacing: -1px;">
-      ICT Equipment Rental Management System
-    </h1>
-    <p class="lead text-secondary mb-5 fs-5">
-      Seamlessly request, manage, and track university ICT equipment. Accessible for Students, Staff, and Administrators.
-    </p>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+        }
 
-    <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center align-items-center">
-      {% if user.is_authenticated %}
-        {% if user.role == 'ADMIN' %}
-          <a class="btn btn-primary btn-lg px-5 py-3" href="{% url 'accounts:admin_dashboard' %}">Go to Dashboard</a>
-        {% elif user.role == 'STUDENT' %}
-          <a class="btn btn-primary btn-lg px-5 py-3" href="{% url 'accounts:student_dashboard' %}">Go to Dashboard</a>
-        {% elif user.role == 'STAFF' %}
-          <a class="btn btn-primary btn-lg px-5 py-3" href="{% url 'accounts:staff_dashboard' %}">Go to Dashboard</a>
-        {% endif %}
-        <a class="btn btn-outline-dark btn-lg px-4 py-3 border-2" href="{% url 'accounts:profile' %}">View My Profile</a>
-      {% else %}
-        <a class="btn btn-primary btn-lg px-5 py-3" href="{% url 'accounts:login' %}">Login to Account</a>
-        <a class="btn btn-outline-primary btn-lg px-4 py-3 border-2" href="{% url 'accounts:register' %}">Create Account</a>
-      {% endif %}
-    </div>
-  </div>
-</div>
-{% endblock content %}
+        /* Navbar */
+        .navbar-landing {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #E2E8F0;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            color: #fff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            padding: 100px 0 80px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #F1F5F9 100%);
+            border-bottom: 1px solid #E2E8F0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hero-title {
+            font-weight: 800;
+            font-size: 3.5rem;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+            color: var(--secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-title span {
+            color: var(--primary);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .btn-custom {
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary-custom {
+            background-color: var(--primary);
+            color: #fff;
+            border: 1px solid var(--primary);
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+            text-decoration: none;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            color: #fff;
+        }
+
+        .btn-outline-custom {
+            color: var(--secondary);
+            border: 1px solid #CBD5E1;
+            background-color: #fff;
+            text-decoration: none;
+        }
+
+        .btn-outline-custom:hover {
+            background-color: #F8FAFC;
+            border-color: #94A3B8;
+            color: var(--secondary);
+        }
+
+        /* Features */
+        .feature-card {
+            background: #fff;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 2rem;
+            height: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background-color: #EFF6FF;
+            color: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer {
+            background-color: var(--secondary);
+            color: #fff;
+            padding: 3rem 0;
+            margin-top: auto;
+        }
+        
+        @media (max-width: 992px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            .hero-section {
+                padding: 60px 0 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar-landing">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="/" class="d-flex align-items-center gap-3 text-decoration-none">
+                <div class="brand-logo">
+                    <i class="bi bi-cpu"></i>
+                </div>
+                <span class="fw-bold fs-5 text-dark">FUD-IERMS</span>
+            </a>
+            <div class="d-flex gap-3">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'accounts:dashboard' %}" class="btn-custom btn-primary-custom d-flex align-items-center">Go to Dashboard</a>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="btn-custom btn-outline-custom d-none d-sm-flex align-items-center">Sign In</a>
+                    <a href="{% url 'accounts:register' %}" class="btn-custom btn-primary-custom d-flex align-items-center">Get Started</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    {% if messages %}
+      <div class="container mt-4">
+        <div class="row justify-content-center">
+          <div class="col-12 col-md-8 col-lg-6">
+            {% for message in messages %}
+              <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                <div class="d-flex align-items-center gap-2">
+                  {% if message.tags == 'success' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                      <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                    </svg>
+                  {% elif message.tags == 'error' or message.tags == 'danger' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                      <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                    </svg>
+                  {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                      <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                    </svg>
+                  {% endif %}
+                  <span>{{ message }}</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Hero -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-7 py-5">
+                    <div class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill mb-4 fw-semibold" style="font-size: 0.85rem;">
+                        Federal University Dutse
+                    </div>
+                    <h1 class="hero-title">
+                        Enterprise ICT Equipment <br><span>Management</span>.
+                    </h1>
+                    <p class="hero-subtitle">
+                        Seamlessly request, manage, and track university ICT equipment. A unified platform for Students, Staff, and Administrators to handle operations efficiently.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'accounts:dashboard' %}" class="btn-custom btn-primary-custom fs-5 d-flex align-items-center gap-2">
+                                Open Dashboard <i class="bi bi-arrow-right"></i>
+                            </a>
+                        {% else %}
+                            <a href="{% url 'accounts:register' %}" class="btn-custom btn-primary-custom fs-5 d-flex align-items-center gap-2">
+                                Start Requesting <i class="bi bi-arrow-right"></i>
+                            </a>
+                            <a href="{% url 'accounts:login' %}" class="btn-custom btn-outline-custom fs-5 d-flex align-items-center">
+                                Sign In
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-lg-5 d-none d-lg-block position-relative">
+                    <!-- Abstract geometric representation of a dashboard/equipment -->
+                    <div class="position-relative w-100" style="height: 400px;">
+                        <div class="position-absolute shadow" style="background: #fff; border: 1px solid #E2E8F0; border-radius: 16px; width: 80%; height: 60%; top: 10%; right: 0; z-index: 2;">
+                            <div class="border-bottom px-3 py-2 d-flex gap-2">
+                                <div class="rounded-circle bg-danger" style="width: 10px; height: 10px;"></div>
+                                <div class="rounded-circle bg-warning" style="width: 10px; height: 10px;"></div>
+                                <div class="rounded-circle bg-success" style="width: 10px; height: 10px;"></div>
+                            </div>
+                            <div class="p-4">
+                                <div class="rounded bg-light w-50 mb-3" style="height: 20px;"></div>
+                                <div class="d-flex gap-3 mb-3">
+                                    <div class="rounded bg-primary-subtle w-100" style="height: 60px;"></div>
+                                    <div class="rounded bg-success-subtle w-100" style="height: 60px;"></div>
+                                </div>
+                                <div class="rounded bg-light w-100" style="height: 80px;"></div>
+                            </div>
+                        </div>
+                        <div class="position-absolute shadow-sm" style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 16px; width: 70%; height: 50%; bottom: 10%; left: 0; z-index: 1;">
+                            <div class="p-4 d-flex flex-column gap-2">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded bg-primary w-25" style="height: 40px;"></div>
+                                    <div class="rounded bg-light flex-grow-1" style="height: 20px;"></div>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded bg-warning w-25" style="height: 40px;"></div>
+                                    <div class="rounded bg-light flex-grow-1" style="height: 20px;"></div>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded bg-success w-25" style="height: 40px;"></div>
+                                    <div class="rounded bg-light flex-grow-1" style="height: 20px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5" style="background-color: #fff;">
+        <div class="container py-5">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold" style="color: var(--secondary); font-size: 2.25rem;">Everything you need to manage ICT assets</h2>
+                <p class="text-muted fs-5">A centralized hub for seamless equipment operations.</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="bi bi-box-seam"></i></div>
+                        <h4 class="fw-bold mb-3 fs-5">Inventory Tracking</h4>
+                        <p class="text-muted mb-0">Real-time visibility into all university ICT equipment. Know exactly what's available, in-use, or under maintenance.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="bi bi-calendar2-check"></i></div>
+                        <h4 class="fw-bold mb-3 fs-5">Simple Requests</h4>
+                        <p class="text-muted mb-0">Students and staff can easily browse available equipment and submit rental requests directly from their dashboards.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+                        <h4 class="fw-bold mb-3 fs-5">Approval Workflows</h4>
+                        <p class="text-muted mb-0">Administrators have full control over the approval process, ensuring equipment goes to the right people securely.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <div class="brand-logo mx-auto mb-3" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                <i class="bi bi-cpu"></i>
+            </div>
+            <h5 class="fw-bold mb-3">FUD-IERMS</h5>
+            <p class="text-secondary mb-0">© 2026 Federal University Dutse. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</body>
+</html>

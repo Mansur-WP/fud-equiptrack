@@ -1,0 +1,133 @@
+{% comment %}
+Enterprise sidebar navigation.
+Uses:
+- user.is_authenticated
+- user.role
+- request.path for active state (string contains matching)
+{% endcomment %}
+
+{% load static %}
+
+{% with current_path=request.path %}
+<div class="d-flex flex-column h-100 bg-sidebar" style="background-color: var(--sidebar-bg); border-right: 1px solid #1e293b;">
+  <!-- Brand -->
+  <div class="p-4 border-bottom border-secondary d-none d-lg-block" style="border-color: #1e293b !important;">
+    <a class="d-flex align-items-center gap-3 text-white text-decoration-none" href="{% url 'home' %}">
+      <div class="d-flex align-items-center justify-content-center rounded" style="width: 40px; height: 40px; background-color: var(--primary);">
+        <i class="bi bi-cpu text-white fs-5"></i>
+      </div>
+      <div class="d-flex flex-column">
+        <span class="fw-bold fs-5 lh-1 mb-1">FUD-IERMS</span>
+        <span class="text-secondary small lh-1" style="font-size: 0.75rem;">ICT Equipment Rental</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Navigation -->
+  <div class="flex-grow-1 overflow-auto py-3">
+    <div class="px-3">
+      <div class="text-uppercase text-secondary fw-semibold mb-2 px-3" style="font-size: 0.7rem; letter-spacing: 0.05em; color: #64748B !important;">Main</div>
+
+      <nav class="nav flex-column gap-1">
+        {% if user.is_authenticated %}
+          <a class="nav-link px-3 py-2 rounded d-flex align-items-center gap-3 text-white {% if 'admin-dashboard' in current_path or 'student-dashboard' in current_path or 'staff-dashboard' in current_path %}active bg-primary{% endif %}" 
+             href="{% url 'accounts:dashboard' %}" 
+             style="{% if 'admin-dashboard' not in current_path and 'student-dashboard' not in current_path and 'staff-dashboard' not in current_path %}color: #94A3B8 !important;{% endif %} font-weight: 500;">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+          </a>
+        {% else %}
+          <a class="nav-link px-3 py-2 rounded d-flex align-items-center gap-3 text-white {% if current_path == '/' %}active bg-primary{% endif %}" 
+             href="{% url 'home' %}" 
+             style="{% if current_path != '/' %}color: #94A3B8 !important;{% endif %} font-weight: 500;">
+            <i class="bi bi-house-door"></i>
+            <span>Home</span>
+          </a>
+        {% endif %}
+
+        <a class="nav-link px-3 py-2 rounded d-flex align-items-center gap-3 text-white {% if 'equipment' in current_path %}active bg-primary{% endif %}" 
+           href="{% url 'equipment:list' %}"
+           style="{% if 'equipment' not in current_path %}color: #94A3B8 !important;{% endif %} font-weight: 500;">
+          <i class="bi bi-laptop"></i>
+          <span>Equipment</span>
+        </a>
+
+        {% if user.is_authenticated %}
+          <a class="nav-link px-3 py-2 rounded d-flex align-items-center gap-3 text-white {% if 'admin_request_management' in current_path %}active bg-primary{% endif %}"
+             href="{% url 'rentals:admin_request_management' %}"
+             style="{% if 'rentals' not in current_path or 'pending' in current_path %}color: #94A3B8 !important;{% endif %} font-weight: 500;">
+            <i class="bi bi-card-checklist"></i>
+            <span>Request Management</span>
+          </a>
+
+          {% if user.role|upper == 'ADMIN' %}
+            <div class="mt-4 mb-2 text-uppercase text-secondary fw-semibold px-3" style="font-size: 0.7rem; letter-spacing: 0.05em; color: #64748B !important;">Management</div>
+            <a class="nav-link px-3 py-2 rounded d-flex align-items-center gap-3 text-white {% if 'rentals/pending' in current_path %}active bg-primary{% endif %}" 
+               href="{% url 'rentals:pending_list' %}"
+               style="{% if 'rentals/pending' not in current_path %}color: #94A3B8 !important;{% endif %} font-weight: 500;">
+              <i class="bi bi-clock-history"></i>
+              <span>Pending Approvals</span>
+            </a>
+            
+            <a class="nav-link px-3 py-2 rounded d-flex align-items-center gap-3 text-white {% if 'rentals/issuance' in current_path %}active bg-primary{% endif %}" 
+               href="{% url 'rentals:issuance_list' %}"
+               style="{% if 'rentals/issuance' not in current_path %}color: #94A3B8 !important;{% endif %} font-weight: 500;">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Equipment Issuance</span>
+            </a>
+          {% endif %}
+        {% endif %}
+      </nav>
+      
+      {% if user.is_authenticated %}
+      <div class="mt-4 mb-2 text-uppercase text-secondary fw-semibold px-3" style="font-size: 0.7rem; letter-spacing: 0.05em; color: #64748B !important;">System</div>
+      <nav class="nav flex-column gap-1">
+        <a class="nav-link px-3 py-2 rounded d-flex align-items-center gap-3 text-white {% if 'profile' in current_path %}active bg-primary{% endif %}" 
+           href="{% url 'accounts:profile' %}"
+           style="{% if 'profile' not in current_path %}color: #94A3B8 !important;{% endif %} font-weight: 500;">
+          <i class="bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </nav>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Footer Info -->
+  <div class="p-3 border-top border-secondary mt-auto" style="border-color: #1e293b !important;">
+    {% if user.is_authenticated %}
+      <a href="{% url 'accounts:profile' %}" class="d-flex align-items-center gap-3 text-decoration-none px-2 py-2 rounded hover-bg" style="color: #94A3B8;">
+        {% if user.profile_image %}
+          <img src="{{ user.profile_image.url }}" alt="{{ user.username }}" class="rounded-circle" style="width: 36px; height: 36px; object-fit: cover; border: 2px solid rgba(255,255,255,0.15);">
+        {% else %}
+          <div class="d-flex align-items-center justify-content-center rounded-circle fw-bold" style="width: 36px; height: 36px; font-size: 0.875rem; background-color: var(--primary); color: #fff; border: 2px solid rgba(255,255,255,0.15);">
+            {{ user.username|slice:":1"|upper }}
+          </div>
+        {% endif %}
+        <div class="d-flex flex-column overflow-hidden">
+          <span class="text-white fw-semibold text-truncate" style="max-width: 150px; font-size: 0.9rem;">{{ user.get_full_name|default:user.username }}</span>
+          <span class="text-secondary small text-truncate" style="font-size: 0.75rem; max-width: 150px;">{% if user.is_superuser %}Administrator{% else %}{{ user.get_role_display }}{% endif %}</span>
+        </div>
+      </a>
+    {% else %}
+      <div class="d-grid gap-2">
+        <a class="btn btn-outline-light btn-sm" href="{% url 'accounts:login' %}">Login</a>
+        <a class="btn btn-primary btn-sm" href="{% url 'accounts:register' %}">Register</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .hover-bg:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: #fff !important;
+  }
+  .nav-link.active:hover {
+    background-color: var(--primary) !important;
+  }
+</style>
+{% endwith %}

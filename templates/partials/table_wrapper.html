@@ -1,0 +1,21 @@
+{% comment %}
+Simple table wrapper for consistent container + responsiveness.
+Usage:
+{% include "partials/table_wrapper.html" with table_class="table-hover" %}
+%}
+
+Expected context:
+- table_class (optional)
+{% endcomment %}
+
+<div class="card border-0 shadow-sm overflow-hidden">
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle mb-0 {{ table_class|default:"" }}">
+      {{ table_head|default:""|safe }}
+      <tbody>
+        {{ table_body|default:""|safe }}
+      </tbody>
+    </table>
+  </div>
+</div>
+

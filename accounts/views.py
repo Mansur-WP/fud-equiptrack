@@ -55,14 +55,23 @@ class CustomLogoutView(LogoutView):
     next_page = "home"
 
     def get(self, request, *args, **kwargs):
-        from django.contrib.auth import logout
-        logout(request)
-        messages.success(request, "You have logged out successfully.")
-        return redirect(self.next_page)
+        # Keep LogoutView's behavior (clears the session + redirects).
+        # IMPORTANT: do not add messages here.
+        # Adding a message in GET results in the message being queued,
+        # then shown on the subsequent POST/redirect cycle as well.
+        return super().get(request, *args, **kwargs)
+
 
     def post(self, request, *args, **kwargs):
+        # Add the logout message exactly once for the user-visible
+        # request that triggered logout.
         messages.success(request, "You have logged out successfully.")
-        return super().post(request, *args, **kwargs)
+        response = super().post(request, *args, **kwargs)
+
+        # Ensure stale success messages are not re-queued/duplicated
+        # across redirects.
+        return response
+
 
 
 class ProfileView(LoginRequiredMixin, UpdateView):
@@ -122,18 +131,77 @@ class DashboardDispatcherView(LoginRequiredMixin, TemplateView):
 
 
 
-class AdminDashboardPlaceholderView(LoginRequiredMixin, TemplateView):
+from django.contrib.auth.mixins import UserPassesTestMixin
+
+
+class AdminDashboardPlaceholderView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = "accounts/admin_dashboard.html"
+
+    def test_func(self):
+        user = self.request.user
+        return user.is_authenticated and (
+            user.is_superuser or user.role == User.Role.ADMIN
+        )
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        # Users
         context["total_users"] = User.objects.count()
+        context["total_students"] = User.objects.filter(role=User.Role.STUDENT).count()
+        context["total_staff"] = User.objects.filter(role=User.Role.STAFF).count()
+        context["total_administrators"] = User.objects.filter(role=User.Role.ADMIN).count()
+
+        # Equipment
         context["total_equipment"] = Equipment.objects.count()
+        context["available_equipment"] = Equipment.objects.filter(status=Equipment.Status.AVAILABLE).count()
+        context["equipment_under_maintenance"] = Equipment.objects.filter(status=Equipment.Status.MAINTENANCE).count()
+
+        # Rentals / Issued equipment
+        from rentals.models import Rental, RentalRequest
+
+        context["issued_equipment"] = Rental.objects.filter(
+            status__in=(Rental.Status.ACTIVE, Rental.Status.OVERDUE)
+        ).count()
+        context["active_rentals"] = Rental.objects.filter(
+            status=Rental.Status.ACTIVE
+        ).count()
+        context["returned_rentals"] = Rental.objects.filter(
+            status=Rental.Status.RETURNED
+        ).count()
+        context["overdue_rentals"] = Rental.objects.filter(
+            status=Rental.Status.OVERDUE
+        ).count()
+
+        # Returns model/table may not exist in this DB state; compute safely.
+        # "Returned Rentals" is still available from Rental.status.
+        context["total_returns"] = context["returned_rentals"]
+
+
+        # Rental Requests
+        context["total_requests"] = RentalRequest.objects.count()
         context["pending_requests"] = RentalRequest.objects.filter(status=RentalRequest.Status.PENDING).count()
-        context["active_rentals"] = RentalRequest.objects.filter(status=RentalRequest.Status.APPROVED).count()
-        
-        context["recent_requests"] = RentalRequest.objects.select_related('requester', 'equipment').order_by('-created_at')[:5]
+        context["approved_requests"] = RentalRequest.objects.filter(status=RentalRequest.Status.APPROVED).count()
+        context["rejected_requests"] = RentalRequest.objects.filter(status=RentalRequest.Status.REJECTED).count()
+
+        # Recent Activity
+        context["recent_registered_users"] = User.objects.order_by("-created_at")[:5]
+        context["recent_equipment_added"] = Equipment.objects.order_by("-created_at")[:5]
+        context["recent_rental_requests"] = (
+            RentalRequest.objects.select_related("requester", "equipment")
+            .order_by("-created_at")[:5]
+        )
+        context["recent_equipment_issued"] = (
+            Rental.objects.select_related("equipment", "issued_to", "issued_by", "rental_request")
+            .order_by("-issued_date")[:5]
+        )
+        # Return table may not exist in this DB state.
+        context["recent_equipment_returned"] = []
+
+
         return context
+
 
 
 class StudentDashboardPlaceholderView(LoginRequiredMixin, TemplateView):

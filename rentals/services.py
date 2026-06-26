@@ -38,19 +38,6 @@ def approve_request(rental_request: RentalRequest, remarks: str = "") -> RentalR
             _("Cannot approve request: it has already been processed (Status: %(status)s).") % {"status": rental_request.status}
         )
 
-    if equipment.available_quantity < rental_request.quantity:
-        raise InvalidRequestStateError(
-            _("Cannot approve request: only %(available)s units of '%(name)s' are available, but %(requested)s were requested.") % {
-                "available": equipment.available_quantity,
-                "name": equipment.name,
-                "requested": rental_request.quantity,
-            }
-        )
-
-    # Update equipment inventory
-    equipment.available_quantity -= rental_request.quantity
-    equipment.save(update_fields=["available_quantity", "updated_at"])
-
     # Update request status
     rental_request.status = RentalRequest.Status.APPROVED
     rental_request.remarks = remarks

@@ -69,7 +69,7 @@
   <div class="row g-4">
     {% for item in equipment_list %}
       <div class="col-12 col-sm-6 col-lg-4">
-        <div class="card border-0 shadow-sm h-100" style="transition: transform 0.2s, box-shadow 0.2s;">
+        <div class="card border-0 shadow-sm h-100 hover-shadow-sm">
           {% if item.image %}
             <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}" style="height: 200px; object-fit: cover;">
           {% else %}
@@ -117,7 +117,7 @@
         {% endif %}
 
         <li class="page-item active">
-          <span class="page-link rounded-3 border-0 shadow-sm" style="background: var(--primary-gradient);">{{ page_obj.number }}</span>
+          <span class="page-link rounded-3 border-0 shadow-sm bg-primary text-white">{{ page_obj.number }}</span>
         </li>
 
         {% if page_obj.has_next %}
@@ -147,3 +147,9 @@
   </div>
 {% endif %}
 {% endblock content %}
+
+{% block extra_head %}
+<style>
+.hover-shadow-sm:hover { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06) !important; transform: translateY(-2px); }
+</style>
+{% endblock extra_head %}

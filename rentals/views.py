@@ -2,14 +2,17 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse
 from django.views.generic import CreateView, DetailView, ListView
-from django.db.models import Q
+from django.db.models import Q, F
+
 
 from accounts.models import User
 from .forms import RentalRequestForm
 from .models import RentalRequest
+from .request_management import annotate_request_management_queryset
 
 
 class StudentOrStaffRequiredMixin(UserPassesTestMixin):
+
     """Only STUDENT and STAFF roles may access these views."""
 
     def test_func(self):
@@ -92,6 +95,7 @@ from .forms import AdminRemarksForm
 from .services import approve_request, reject_request, RequestAlreadyProcessedError, InvalidRequestStateError
 
 class AdminRequiredMixin(UserPassesTestMixin):
+
     """Only ADMIN roles may access these views."""
 
     def test_func(self):
@@ -224,6 +228,7 @@ class RentalDetailView(LoginRequiredMixin, DetailView):
 
 
 class IssueEquipmentView(LoginRequiredMixin, AdminRequiredMixin, SingleObjectMixin, FormView):
+
     model = RentalRequest
     template_name = "rentals/issue_equipment.html"
     form_class = AdminRemarksForm
@@ -252,3 +257,206 @@ class IssueEquipmentView(LoginRequiredMixin, AdminRequiredMixin, SingleObjectMix
 
     def get_success_url(self):
         return reverse("rentals:active_rentals")
+
+
+from django.db.models import Q
+from django.views.generic import ListView
+
+
+class AdminRequestManagementListView(
+    LoginRequiredMixin, AdminRequiredMixin, ListView
+):
+    model = RentalRequest
+    template_name = "rentals/admin_request_management.html"
+    context_object_name = "requests"
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = (
+            RentalRequest.objects
+            .select_related(
+                "requester",
+                "equipment",
+                "rental",
+            )
+        )
+
+        # Add only derived history status
+        qs = annotate_request_management_queryset(qs)
+
+        # -------------------------
+        # Filters
+        # -------------------------
+
+        status = self.request.GET.get("status")
+        if status:
+            qs = qs.filter(history_status=status)
+
+        equipment_category = self.request.GET.get("equipment_category")
+        if equipment_category:
+            qs = qs.filter(equipment__category=equipment_category)
+
+        date_from = self.request.GET.get("date_from")
+        if date_from:
+            qs = qs.filter(request_date__gte=date_from)
+
+        date_to = self.request.GET.get("date_to")
+        if date_to:
+            qs = qs.filter(request_date__lte=date_to)
+
+        request_id = self.request.GET.get("request_id")
+        if request_id:
+            digits = "".join(filter(str.isdigit, request_id))
+            if digits:
+                qs = qs.filter(pk=int(digits))
+
+        student_name = self.request.GET.get("student_name")
+        if student_name:
+            qs = qs.filter(
+                Q(requester__username__icontains=student_name)
+                | Q(requester__first_name__icontains=student_name)
+                | Q(requester__last_name__icontains=student_name)
+            )
+
+        equipment_name = self.request.GET.get("equipment_name")
+        if equipment_name:
+            qs = qs.filter(
+                equipment__name__icontains=equipment_name
+            )
+
+        return qs.order_by("-request_date", "-pk")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["status_choices"] = [
+            ("PENDING", "Pending"),
+            ("APPROVED", "Approved"),
+            ("REJECTED", "Rejected"),
+            ("ISSUED", "Issued"),
+            ("RETURNED", "Returned"),
+        ]
+
+        try:
+            from equipment.models import Equipment
+            context["equipment_categories"] = Equipment.Category.choices
+        except Exception:
+            context["equipment_categories"] = []
+
+        get_copy = self.request.GET.copy()
+        get_copy.pop("page", None)
+        context["query_params"] = get_copy.urlencode()
+
+        return context
+# class AdminRequestManagementListView(
+#     LoginRequiredMixin, AdminRequiredMixin, ListView
+# ):
+#     model = RentalRequest
+#     template_name = "rentals/admin_request_management.html"
+#     context_object_name = "requests"
+#     paginate_by = 10
+
+#     def get_queryset(self):
+#         qs = RentalRequest.objects.all()
+#         return qs
+
+#         status = self.request.GET.get("status")
+#         if status:
+#             # Template uses unified history statuses (PENDING/APPROVED/
+#             # REJECTED/ISSUED/RETURNED)
+#             if status in {"PENDING", "APPROVED", "REJECTED"}:
+#                 qs = qs.filter(status=status)
+#             elif status in {"ISSUED", "RETURNED"}:
+#                 qs = qs.filter(rental__status=status if status == "RETURNED" else None)
+#                 # Above fallback is overridden below using annotated field
+#                 qs = qs.filter(history_status=status)
+#             else:
+#                 qs = qs.filter(history_status=status)
+
+#         equipment_category = self.request.GET.get("equipment_category")
+#         if equipment_category:
+#             qs = qs.filter(equipment__category=equipment_category)
+
+#         date_from = self.request.GET.get("date_from")
+#         if date_from:
+#             qs = qs.filter(request_date__gte=date_from)
+
+#         date_to = self.request.GET.get("date_to")
+#         if date_to:
+#             qs = qs.filter(request_date__lte=date_to)
+
+#         request_id = self.request.GET.get("request_id")
+#         if request_id:
+#             # Accept REQ-0001 style values
+#             digits = "".join(ch for ch in request_id if ch.isdigit())
+#             if digits:
+#                 qs = qs.filter(id=int(digits))
+
+#         student_name = self.request.GET.get("student_name")
+#         if student_name:
+#             qs = qs.filter(
+#                 Q(requester__username__icontains=student_name)
+#                 | Q(requester__first_name__icontains=student_name)
+#                 | Q(requester__last_name__icontains=student_name)
+#             )
+
+#         equipment_name = self.request.GET.get("equipment_name")
+#         if equipment_name:
+#             qs = qs.filter(equipment__name__icontains=equipment_name)
+
+#         # Map fields expected by the template.
+#         # `annotate_request_management_queryset` already provides
+#         # `history_status` and `history_status_display`.
+#         qs = qs.annotate(
+#             request_id=F("id"),
+#             requester_name=F("requester__username"),
+#             requester_role=F("requester__role"),
+#             equipment_name=F("equipment__name"),
+#             equipment_serial=F("equipment__serial_number"),
+#             expected_return_date=F("expected_return_date"),
+#             # `status` and `status_display` are derived from `history_status*`.
+#             # NOTE: do not annotate `request_date` here; it is a real model field.
+#             history_status_code=F("history_status"),
+#             history_status_label=F("history_status_display"),
+#         )
+
+#         return qs.order_by("-request_date", "-id")
+
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+
+#         # Unified history statuses for the admin UI.
+#         context["status_choices"] = [
+#             ("PENDING", "Pending"),
+#             ("APPROVED", "Approved"),
+#             ("REJECTED", "Rejected"),
+#             ("ISSUED", "Issued"),
+#             ("RETURNED", "Returned"),
+#         ]
+
+#         # Equipment categories (from Equipment model)
+#         try:
+#             from equipment.models import Equipment
+
+#             context["equipment_categories"] = Equipment.Category.choices
+#         except Exception:
+#             context["equipment_categories"] = []
+
+#         get_copy = self.request.GET.copy()
+#         if "page" in get_copy:
+#             del get_copy["page"]
+#         context["query_params"] = get_copy.urlencode()
+
+#         return context
+
+
+
+class EquipmentIssuanceListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
+    model = RentalRequest
+    template_name = "rentals/equipment_issuance.html"
+    context_object_name = "requests"
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = super().get_queryset().select_related("requester", "equipment")
+        return qs.filter(status=RentalRequest.Status.APPROVED, rental__isnull=True)

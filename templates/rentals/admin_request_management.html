@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Request Management - FUD-IERMS{% endblock title %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+  <div>
+    <h1 class="h3 fw-bold text-dark mb-1">Request Management</h1>
+    <p class="text-secondary mb-0">Complete rental request history (Pending, Approved, Rejected, Issued, Returned).</p>
+  </div>
+</div>
+
+<!-- Filter + Search -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body p-3 p-lg-4">
+    <form method="get" action="{% url 'rentals:admin_request_management' %}">
+      <div class="row g-3">
+        <div class="col-12 col-lg-3">
+          <label class="form-label fw-semibold text-secondary small" for="id_status">Status</label>
+          <select class="form-select" id="id_status" name="status">
+            <option value="">All Statuses</option>
+            {% for value, label in status_choices %}
+              <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12 col-lg-3">
+          <label class="form-label fw-semibold text-secondary small" for="id_equipment_category">Equipment Category</label>
+          <select class="form-select" id="id_equipment_category" name="equipment_category">
+            <option value="">All Categories</option>
+            {% for value, label in equipment_categories %}
+              <option value="{{ value }}" {% if request.GET.equipment_category == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12 col-lg-3">
+          <label class="form-label fw-semibold text-secondary small" for="id_date_from">Date From</label>
+          <input class="form-control" type="date" id="id_date_from" name="date_from" value="{{ request.GET.date_from|default:'' }}" />
+        </div>
+
+        <div class="col-12 col-lg-3">
+          <label class="form-label fw-semibold text-secondary small" for="id_date_to">Date To</label>
+          <input class="form-control" type="date" id="id_date_to" name="date_to" value="{{ request.GET.date_to|default:'' }}" />
+        </div>
+
+        <div class="col-12 col-lg-4">
+          <label class="form-label fw-semibold text-secondary small" for="id_search_request_id">Request ID</label>
+          <input class="form-control" type="text" id="id_search_request_id" name="request_id" placeholder="e.g. 1 or REQ-0001" value="{{ request.GET.request_id|default:'' }}" />
+        </div>
+
+        <div class="col-12 col-lg-4">
+          <label class="form-label fw-semibold text-secondary small" for="id_search_student">Student Name</label>
+          <input class="form-control" type="text" id="id_search_student" name="student_name" placeholder="Search by student" value="{{ request.GET.student_name|default:'' }}" />
+        </div>
+
+        <div class="col-12 col-lg-4">
+          <label class="form-label fw-semibold text-secondary small" for="id_search_equipment">Equipment Name</label>
+          <input class="form-control" type="text" id="id_search_equipment" name="equipment_name" placeholder="Search by equipment" value="{{ request.GET.equipment_name|default:'' }}" />
+        </div>
+
+        <div class="col-12 d-flex gap-2 justify-content-start justify-content-lg-end">
+          <button type="submit" class="btn btn-primary">Search</button>
+          <a href="{% url 'rentals:admin_request_management' %}" class="btn btn-outline-secondary">Reset</a>
+        </div>
+      </div>
+
+      {% if query_params %}
+        <input type="hidden" name="__retain" value="1" />
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- Table -->
+{% if requests %}
+  <div class="card border-0 shadow-sm overflow-hidden">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="bg-light">
+          <tr>
+            <th class="text-secondary small fw-bold">Request ID</th>
+            <th class="text-secondary small fw-bold">Equipment</th>
+            <th class="text-secondary small fw-bold">Requested By</th>
+            <th class="text-secondary small fw-bold">Request Date</th>
+            <th class="text-secondary small fw-bold d-none d-md-table-cell">Expected Return Date</th>
+            <th class="text-secondary small fw-bold">Status</th>
+            <th class="text-secondary small fw-bold text-end pe-4">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in requests %}
+            <tr>
+            <td>
+              <a href="{% url 'rentals:detail' row.pk %}" class="text-primary text-decoration-none fw-semibold">
+                  REQ-{{ row.pk|stringformat:"04d" }}
+              </a>
+            </td>
+              <td>
+                <div class="fw-semibold text-dark">
+                {{ row.equipment.name }}
+                  </div>
+
+                  <small class="text-secondary font-monospace">
+                      {{ row.equipment.serial_number }}
+                  </small>
+              </td>
+              <td>
+                <div class="fw-semibold text-dark">
+          {% if row.requester.get_full_name %}
+              {{ row.requester.get_full_name }}
+          {% else %}
+              {{ row.requester.username }}
+          {% endif %}
+              </div>
+
+              <small class="text-secondary">
+                  {{ row.requester.role }}
+              </small>
+
+              </td>
+              <td>{{ row.request_date|date:"M d, Y" }}</td>
+              <td class="d-none d-md-table-cell">{{ row.expected_return_date|date:"M d, Y" }}</td>
+              <td>
+                {% if row.history_status == 'PENDING' %}
+                  <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pending</span>
+                {% elif row.history_status == 'APPROVED' %}
+                  <span class="badge bg-success-subtle text-success border border-success-subtle">Approved</span>
+                {% elif row.history_status == 'REJECTED' %}
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Rejected</span>
+                {% elif row.history_status == 'ISSUED' %}
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Issued</span>
+                {% elif row.history_status == 'RETURNED' %}
+                  <span class="badge bg-success-subtle text-success border border-success-subtle">Returned</span>
+                {% else %}
+                  <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">{{ row.history_status_display }}</span>
+                {% endif %}
+              </td>
+              <td class="text-end pe-4">
+                <a href="{% url 'rentals:detail' row.pk %}" class="btn btn-sm btn-outline-primary">View Details</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  {% if is_paginated %}
+    <nav aria-label="Request management pagination" class="mt-4">
+      <ul class="pagination justify-content-center gap-1">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link rounded-3 border-0 shadow-sm" href="?page=1{% if query_params %}&{{ query_params }}{% endif %}">&laquo;</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link rounded-3 border-0 shadow-sm" href="?page={{ page_obj.previous_page_number }}{% if query_params %}&{{ query_params }}{% endif %}">{{ page_obj.previous_page_number }}</a>
+          </li>
+        {% endif %}
+
+        <li class="page-item active">
+          <span class="page-link rounded-3 border-0 shadow-sm" style="background-color: var(--primary); color: white;">{{ page_obj.number }}</span>
+        </li>
+
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link rounded-3 border-0 shadow-sm" href="?page={{ page_obj.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}">{{ page_obj.next_page_number }}</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link rounded-3 border-0 shadow-sm" href="?page={{ page_obj.paginator.num_pages }}{% if query_params %}&{{ query_params }}{% endif %}">&raquo;</a>
+          </li>
+        {% endif %}
+      </ul>
+      <p class="text-center text-secondary small mt-2">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} &middot; {{ page_obj.paginator.count }} request{{ page_obj.paginator.count|pluralize }}
+      </p>
+    </nav>
+  {% endif %}
+{% else %}
+  {% include "partials/empty_state.html" with title="No requests found" description="Adjust your filters or search criteria." %}
+{% endif %}
+{% endblock content %}

@@ -1,0 +1,14 @@
+{% comment %}
+Centralized status badge.
+Expected context:
+- status (required)
+{% endcomment %}
+
+{% if status == 'PENDING' %}
+  <span class="badge text-bg-warning-subtle">Pending</span>
+{% elif status == 'APPROVED' %}
+  <span class="badge text-bg-success-subtle">Approved</span>
+{% else %}
+  <span class="badge text-bg-danger-subtle">Rejected</span>
+{% endif %}
+

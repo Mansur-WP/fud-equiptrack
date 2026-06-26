@@ -1,8 +1,12 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from .managers import CustomUserManager
+
 
 class User(AbstractUser):
+    objects = CustomUserManager()
+
     class Role(models.TextChoices):
         ADMIN = "ADMIN", "Admin"
         STUDENT = "STUDENT", "Student"
@@ -14,6 +18,7 @@ class User(AbstractUser):
         default=Role.STUDENT,
         db_index=True,
     )
+
     phone = models.CharField(max_length=20, blank=True, db_index=True)
     faculty = models.CharField(max_length=255, blank=True, db_index=True)
     department = models.CharField(max_length=255, blank=True, db_index=True)
@@ -25,6 +30,11 @@ class User(AbstractUser):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if self.is_superuser:
+            self.role = self.Role.ADMIN
+        super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return self.get_username()
@@ -39,4 +49,3 @@ class User(AbstractUser):
             models.Index(fields=["faculty"]),
             models.Index(fields=["department"]),
         ]
-
