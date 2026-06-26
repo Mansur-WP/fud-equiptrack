@@ -210,22 +210,15 @@
               <li class="nav-item">
                 <a class="nav-link {% if 'rentals' in request.path %}active{% endif %}" href="{% url 'rentals:list' %}">Requests</a>
               </li>
-              {% if user.role == 'ADMIN' %}
-                <li class="nav-item">
-                  <a class="nav-link {% if 'admin-dashboard' in request.path %}active{% endif %}" href="{% url 'accounts:admin_dashboard' %}">Dashboard</a>
-                </li>
+              <li class="nav-item">
+                <a class="nav-link {% if 'admin-dashboard' in request.path or 'student-dashboard' in request.path or 'staff-dashboard' in request.path %}active{% endif %}" href="{% url 'accounts:dashboard' %}">Dashboard</a>
+              </li>
+              {% if user.role|upper == 'ADMIN' %}
                 <li class="nav-item">
                   <a class="nav-link {% if 'rentals/pending' in request.path %}active{% endif %}" href="{% url 'rentals:pending_list' %}">Pending Approvals</a>
                 </li>
-              {% elif user.role == 'STUDENT' %}
-                <li class="nav-item">
-                  <a class="nav-link {% if 'student-dashboard' in request.path %}active{% endif %}" href="{% url 'accounts:student_dashboard' %}">Dashboard</a>
-                </li>
-              {% elif user.role == 'STAFF' %}
-                <li class="nav-item">
-                  <a class="nav-link {% if 'staff-dashboard' in request.path %}active{% endif %}" href="{% url 'accounts:staff_dashboard' %}">Dashboard</a>
-                </li>
               {% endif %}
+
             {% endif %}
           </ul>
           

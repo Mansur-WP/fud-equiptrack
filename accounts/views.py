@@ -29,16 +29,17 @@ class CustomLoginView(LoginView):
     template_name = "accounts/login.html"
     form_class = LoginForm
 
-
     def get_success_url(self):
         user = self.request.user
-        role = user.role
-        if role == User.Role.ADMIN or user.is_superuser:
+        role = getattr(user, "role", None)
+
+        if user.is_superuser or role == User.Role.ADMIN:
             return reverse("accounts:admin_dashboard")
-        elif role == User.Role.STUDENT:
-            return reverse("accounts:student_dashboard")
-        elif role == User.Role.STAFF:
+        if role == User.Role.STAFF:
             return reverse("accounts:staff_dashboard")
+        if role == User.Role.STUDENT:
+            return reverse("accounts:student_dashboard")
+
         return reverse("accounts:student_dashboard")
 
     def form_valid(self, form):
@@ -96,6 +97,30 @@ class ProfileView(LoginRequiredMixin, UpdateView):
 # Dashboard Views
 from equipment.models import Equipment
 from rentals.models import RentalRequest
+
+
+class DashboardDispatcherView(LoginRequiredMixin, TemplateView):
+    """Single entry point for routing users to the correct dashboard."""
+
+    # Never render a template.
+    template_name = "accounts/student_dashboard.html"
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+
+        # Required precedence/order.
+        role = getattr(user, "role", None)
+        if user.is_superuser or role == User.Role.ADMIN:
+            return redirect("accounts:admin_dashboard")
+        if role == User.Role.STAFF:
+            return redirect("accounts:staff_dashboard")
+        if role == User.Role.STUDENT:
+            return redirect("accounts:student_dashboard")
+
+        # Fallback (safe default)
+        return redirect("accounts:student_dashboard")
+
+
 
 class AdminDashboardPlaceholderView(LoginRequiredMixin, TemplateView):
     template_name = "accounts/admin_dashboard.html"

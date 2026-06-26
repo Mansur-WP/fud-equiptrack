@@ -11,7 +11,13 @@ urlpatterns = [
     path("logout/", views.CustomLogoutView.as_view(), name="logout"),
     path("profile/", views.ProfileView.as_view(), name="profile"),
 
-    # Placeholder dashboards for role-based redirects.
+    path(
+        "dashboard/",
+        views.DashboardDispatcherView.as_view(),
+        name="dashboard",
+    ),
+
+    # Placeholder dashboards (final destinations)
     path(
         "admin-dashboard/",
         views.AdminDashboardPlaceholderView.as_view(),
@@ -27,6 +33,7 @@ urlpatterns = [
         views.StaffDashboardPlaceholderView.as_view(),
         name="staff_dashboard",
     ),
+
 ]
 
 

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Issue Equipment</h2>
+    <div class="card mb-4">
+        <div class="card-body">
+            <p><strong>Requester:</strong> {{ rental_request.requester }}</p>
+            <p><strong>Equipment:</strong> {{ rental_request.equipment.name }}</p>
+            <p><strong>Quantity:</strong> {{ rental_request.quantity }}</p>
+            <p><strong>Purpose:</strong> {{ rental_request.purpose }}</p>
+            <p><strong>Approval Remarks:</strong> {{ rental_request.remarks }}</p>
+            <p><strong>Expected Return Date:</strong> {{ rental_request.expected_return_date }}</p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Issue Equipment</button>
+        <a href="{% url 'rentals:pending_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Rental Detail{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Rental Details</h2>
+        <a href="{% url 'rentals:active_rentals' %}" class="btn btn-outline-secondary">Back to Rentals</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-3 text-muted">Equipment:</div>
+                <div class="col-md-9 fw-bold">{{ rental.equipment.name }} ({{ rental.equipment.serial_number }})</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-3 text-muted">Borrower:</div>
+                <div class="col-md-9">{{ rental.issued_to.get_full_name|default:rental.issued_to.username }} ({{ rental.issued_to.email }})</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-3 text-muted">Issued By:</div>
+                <div class="col-md-9">{{ rental.issued_by.username }}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-3 text-muted">Quantity:</div>
+                <div class="col-md-9">{{ rental.quantity }}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-3 text-muted">Issued Date:</div>
+                <div class="col-md-9">{{ rental.issued_date }}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-3 text-muted">Expected Return:</div>
+                <div class="col-md-9">{{ rental.expected_return_date }}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-3 text-muted">Status:</div>
+                <div class="col-md-9">
+                    <span class="badge {% if rental.status == 'ACTIVE' %}bg-success{% elif rental.status == 'OVERDUE' %}bg-danger{% else %}bg-secondary{% endif %}">
+                        {{ rental.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            {% if rental.notes %}
+            <div class="row mb-3">
+                <div class="col-md-3 text-muted">Notes:</div>
+                <div class="col-md-9">{{ rental.notes|linebreaks }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
