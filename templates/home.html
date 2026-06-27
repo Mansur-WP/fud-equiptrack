@@ -4,7 +4,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ICT Equipment Rental Management System - FUD</title>
+    <title>{{ system_name }} - {{ short_system_name }}</title>
+
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -177,7 +178,8 @@
                 <div class="brand-logo">
                     <i class="bi bi-cpu"></i>
                 </div>
-                <span class="fw-bold fs-5 text-dark">FUD-IERMS</span>
+                    <span class="fw-bold fs-5 text-dark">{{ short_system_name }}</span>
+
             </a>
             <div class="d-flex gap-3">
                 {% if user.is_authenticated %}
@@ -226,10 +228,11 @@
             <div class="row align-items-center">
                 <div class="col-lg-7 py-5">
                     <div class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill mb-4 fw-semibold" style="font-size: 0.85rem;">
-                        Federal University Dutse
+                        {{ organization_name }}
                     </div>
+
                     <h1 class="hero-title">
-                        Enterprise ICT Equipment <br><span>Management</span>.
+                        IC Equipment Rental <br><span>Management</span> System.
                     </h1>
                     <p class="hero-subtitle">
                         Seamlessly request, manage, and track university ICT equipment. A unified platform for Students, Staff, and Administrators to handle operations efficiently.
@@ -329,8 +332,9 @@
             <div class="brand-logo mx-auto mb-3" style="width: 48px; height: 48px; font-size: 1.5rem;">
                 <i class="bi bi-cpu"></i>
             </div>
-            <h5 class="fw-bold mb-3">FUD-IERMS</h5>
-            <p class="text-secondary mb-0">© 2026 Federal University Dutse. All rights reserved.</p>
+            <h5 class="fw-bold mb-3">{{ short_system_name }}</h5>
+            <p class="text-secondary mb-0">{{ copyright_text }}. All rights reserved.</p>
+
         </div>
     </footer>
 

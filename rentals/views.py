@@ -2,17 +2,27 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse
 from django.views.generic import CreateView, DetailView, ListView
-from django.db.models import Q, F
-
+from django.db.models import Q
 
 from accounts.models import User
-from .forms import RentalRequestForm
-from .models import RentalRequest
+
+from .forms import AdminRemarksForm, RentalRequestForm, ReturnEquipmentForm
+from .models import Rental, RentalRequest
 from .request_management import annotate_request_management_queryset
+from .services import (
+    InvalidRentalRequestError,
+    InvalidRentalStateError,
+    RentalAlreadyReturnedError,
+    approve_request,
+    issue_equipment,
+    reject_request,
+    return_equipment,
+)
+from django.views.generic.edit import FormView
+from django.views.generic.detail import SingleObjectMixin
 
 
 class StudentOrStaffRequiredMixin(UserPassesTestMixin):
-
     """Only STUDENT and STAFF roles may access these views."""
 
     def test_func(self):
@@ -37,7 +47,6 @@ class RentalRequestListView(LoginRequiredMixin, ListView):
         if user.role != User.Role.ADMIN:
             qs = qs.filter(requester=user)
 
-        # Status filter
         status = self.request.GET.get("status")
         if status:
             qs = qs.filter(status=status)
@@ -83,19 +92,12 @@ class RentalRequestDetailView(LoginRequiredMixin, DetailView):
     def get_queryset(self):
         qs = super().get_queryset().select_related("requester", "equipment")
         user = self.request.user
-        # Non-admins can only see their own requests
         if user.role != User.Role.ADMIN:
             qs = qs.filter(requester=user)
         return qs
 
 
-from django.views.generic.edit import FormView
-from django.views.generic.detail import SingleObjectMixin
-from .forms import AdminRemarksForm
-from .services import approve_request, reject_request, RequestAlreadyProcessedError, InvalidRequestStateError
-
 class AdminRequiredMixin(UserPassesTestMixin):
-
     """Only ADMIN roles may access these views."""
 
     def test_func(self):
@@ -114,7 +116,9 @@ class PendingRequestsListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
         return qs.filter(status=RentalRequest.Status.PENDING)
 
 
-class ApproveRequestView(LoginRequiredMixin, AdminRequiredMixin, SingleObjectMixin, FormView):
+class ApproveRequestView(
+    LoginRequiredMixin, AdminRequiredMixin, SingleObjectMixin, FormView
+):
     model = RentalRequest
     template_name = "rentals/approve_request.html"
     form_class = AdminRemarksForm
@@ -131,10 +135,11 @@ class ApproveRequestView(LoginRequiredMixin, AdminRequiredMixin, SingleObjectMix
     def form_valid(self, form):
         try:
             approve_request(self.object, remarks=form.cleaned_data["remarks"])
-            messages.success(self.request, f"Request for {self.object.equipment.name} has been approved.")
-        except RequestAlreadyProcessedError as e:
-            messages.error(self.request, str(e))
-        except InvalidRequestStateError as e:
+            messages.success(
+                self.request,
+                f"Request for {self.object.equipment.name} has been approved.",
+            )
+        except Exception as e:
             messages.error(self.request, str(e))
             return self.form_invalid(form)
         return super().form_valid(form)
@@ -143,7 +148,9 @@ class ApproveRequestView(LoginRequiredMixin, AdminRequiredMixin, SingleObjectMix
         return reverse("rentals:pending_list")
 
 
-class RejectRequestView(LoginRequiredMixin, AdminRequiredMixin, SingleObjectMixin, FormView):
+class RejectRequestView(
+    LoginRequiredMixin, AdminRequiredMixin, SingleObjectMixin, FormView
+):
     model = RentalRequest
     template_name = "rentals/reject_request.html"
     form_class = AdminRemarksForm
@@ -160,10 +167,11 @@ class RejectRequestView(LoginRequiredMixin, AdminRequiredMixin, SingleObjectMixi
     def form_valid(self, form):
         try:
             reject_request(self.object, remarks=form.cleaned_data["remarks"])
-            messages.success(self.request, f"Request for {self.object.equipment.name} has been rejected.")
-        except RequestAlreadyProcessedError as e:
-            messages.error(self.request, str(e))
-        except InvalidRequestStateError as e:
+            messages.success(
+                self.request,
+                f"Request for {self.object.equipment.name} has been rejected.",
+            )
+        except Exception as e:
             messages.error(self.request, str(e))
             return self.form_invalid(form)
         return super().form_valid(form)
@@ -171,9 +179,6 @@ class RejectRequestView(LoginRequiredMixin, AdminRequiredMixin, SingleObjectMixi
     def get_success_url(self):
         return reverse("rentals:pending_list")
 
-
-from .models import Rental
-from .services import issue_equipment, InvalidRentalRequestError
 
 class RentalListView(LoginRequiredMixin, ListView):
     model = Rental
@@ -184,7 +189,7 @@ class RentalListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         qs = Rental.objects.select_related("equipment", "issued_to", "issued_by")
         user = self.request.user
-        
+
         if user.role != User.Role.ADMIN and not user.is_superuser:
             qs = qs.filter(issued_to=user)
 
@@ -192,15 +197,14 @@ class RentalListView(LoginRequiredMixin, ListView):
         if status:
             qs = qs.filter(status=status)
         else:
-            # Default to active if not specified
             qs = qs.filter(status=Rental.Status.ACTIVE)
 
         search = self.request.GET.get("search")
         if search:
             qs = qs.filter(
-                Q(equipment__name__icontains=search) |
-                Q(equipment__serial_number__icontains=search) |
-                Q(issued_to__username__icontains=search)
+                Q(equipment__name__icontains=search)
+                | Q(equipment__serial_number__icontains=search)
+                | Q(issued_to__username__icontains=search)
             )
         return qs
 
@@ -220,7 +224,12 @@ class RentalDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "rental"
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related("equipment", "issued_to", "issued_by", "rental_request")
+        qs = super().get_queryset().select_related(
+            "equipment",
+            "issued_to",
+            "issued_by",
+            "rental_request",
+        )
         user = self.request.user
         if user.role != User.Role.ADMIN and not user.is_superuser:
             qs = qs.filter(issued_to=user)
@@ -228,7 +237,6 @@ class RentalDetailView(LoginRequiredMixin, DetailView):
 
 
 class IssueEquipmentView(LoginRequiredMixin, AdminRequiredMixin, SingleObjectMixin, FormView):
-
     model = RentalRequest
     template_name = "rentals/issue_equipment.html"
     form_class = AdminRemarksForm
@@ -247,9 +255,12 @@ class IssueEquipmentView(LoginRequiredMixin, AdminRequiredMixin, SingleObjectMix
             issue_equipment(
                 rental_request=self.object,
                 issued_by=self.request.user,
-                notes=form.cleaned_data.get("remarks", "")
+                notes=form.cleaned_data.get("remarks", ""),
             )
-            messages.success(self.request, f"Equipment successfully issued to {self.object.requester}.")
+            messages.success(
+                self.request,
+                f"Equipment successfully issued to {self.object.requester}.",
+            )
         except InvalidRentalRequestError as e:
             messages.error(self.request, str(e))
             return self.form_invalid(form)
@@ -259,34 +270,15 @@ class IssueEquipmentView(LoginRequiredMixin, AdminRequiredMixin, SingleObjectMix
         return reverse("rentals:active_rentals")
 
 
-from django.db.models import Q
-from django.views.generic import ListView
-
-
-class AdminRequestManagementListView(
-    LoginRequiredMixin, AdminRequiredMixin, ListView
-):
+class AdminRequestManagementListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
     model = RentalRequest
     template_name = "rentals/admin_request_management.html"
     context_object_name = "requests"
     paginate_by = 10
 
     def get_queryset(self):
-        qs = (
-            RentalRequest.objects
-            .select_related(
-                "requester",
-                "equipment",
-                "rental",
-            )
-        )
-
-        # Add only derived history status
+        qs = RentalRequest.objects.select_related("requester", "equipment", "rental")
         qs = annotate_request_management_queryset(qs)
-
-        # -------------------------
-        # Filters
-        # -------------------------
 
         status = self.request.GET.get("status")
         if status:
@@ -320,15 +312,12 @@ class AdminRequestManagementListView(
 
         equipment_name = self.request.GET.get("equipment_name")
         if equipment_name:
-            qs = qs.filter(
-                equipment__name__icontains=equipment_name
-            )
+            qs = qs.filter(equipment__name__icontains=equipment_name)
 
         return qs.order_by("-request_date", "-pk")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         context["status_choices"] = [
             ("PENDING", "Pending"),
             ("APPROVED", "Approved"),
@@ -339,6 +328,7 @@ class AdminRequestManagementListView(
 
         try:
             from equipment.models import Equipment
+
             context["equipment_categories"] = Equipment.Category.choices
         except Exception:
             context["equipment_categories"] = []
@@ -346,109 +336,7 @@ class AdminRequestManagementListView(
         get_copy = self.request.GET.copy()
         get_copy.pop("page", None)
         context["query_params"] = get_copy.urlencode()
-
         return context
-# class AdminRequestManagementListView(
-#     LoginRequiredMixin, AdminRequiredMixin, ListView
-# ):
-#     model = RentalRequest
-#     template_name = "rentals/admin_request_management.html"
-#     context_object_name = "requests"
-#     paginate_by = 10
-
-#     def get_queryset(self):
-#         qs = RentalRequest.objects.all()
-#         return qs
-
-#         status = self.request.GET.get("status")
-#         if status:
-#             # Template uses unified history statuses (PENDING/APPROVED/
-#             # REJECTED/ISSUED/RETURNED)
-#             if status in {"PENDING", "APPROVED", "REJECTED"}:
-#                 qs = qs.filter(status=status)
-#             elif status in {"ISSUED", "RETURNED"}:
-#                 qs = qs.filter(rental__status=status if status == "RETURNED" else None)
-#                 # Above fallback is overridden below using annotated field
-#                 qs = qs.filter(history_status=status)
-#             else:
-#                 qs = qs.filter(history_status=status)
-
-#         equipment_category = self.request.GET.get("equipment_category")
-#         if equipment_category:
-#             qs = qs.filter(equipment__category=equipment_category)
-
-#         date_from = self.request.GET.get("date_from")
-#         if date_from:
-#             qs = qs.filter(request_date__gte=date_from)
-
-#         date_to = self.request.GET.get("date_to")
-#         if date_to:
-#             qs = qs.filter(request_date__lte=date_to)
-
-#         request_id = self.request.GET.get("request_id")
-#         if request_id:
-#             # Accept REQ-0001 style values
-#             digits = "".join(ch for ch in request_id if ch.isdigit())
-#             if digits:
-#                 qs = qs.filter(id=int(digits))
-
-#         student_name = self.request.GET.get("student_name")
-#         if student_name:
-#             qs = qs.filter(
-#                 Q(requester__username__icontains=student_name)
-#                 | Q(requester__first_name__icontains=student_name)
-#                 | Q(requester__last_name__icontains=student_name)
-#             )
-
-#         equipment_name = self.request.GET.get("equipment_name")
-#         if equipment_name:
-#             qs = qs.filter(equipment__name__icontains=equipment_name)
-
-#         # Map fields expected by the template.
-#         # `annotate_request_management_queryset` already provides
-#         # `history_status` and `history_status_display`.
-#         qs = qs.annotate(
-#             request_id=F("id"),
-#             requester_name=F("requester__username"),
-#             requester_role=F("requester__role"),
-#             equipment_name=F("equipment__name"),
-#             equipment_serial=F("equipment__serial_number"),
-#             expected_return_date=F("expected_return_date"),
-#             # `status` and `status_display` are derived from `history_status*`.
-#             # NOTE: do not annotate `request_date` here; it is a real model field.
-#             history_status_code=F("history_status"),
-#             history_status_label=F("history_status_display"),
-#         )
-
-#         return qs.order_by("-request_date", "-id")
-
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-
-#         # Unified history statuses for the admin UI.
-#         context["status_choices"] = [
-#             ("PENDING", "Pending"),
-#             ("APPROVED", "Approved"),
-#             ("REJECTED", "Rejected"),
-#             ("ISSUED", "Issued"),
-#             ("RETURNED", "Returned"),
-#         ]
-
-#         # Equipment categories (from Equipment model)
-#         try:
-#             from equipment.models import Equipment
-
-#             context["equipment_categories"] = Equipment.Category.choices
-#         except Exception:
-#             context["equipment_categories"] = []
-
-#         get_copy = self.request.GET.copy()
-#         if "page" in get_copy:
-#             del get_copy["page"]
-#         context["query_params"] = get_copy.urlencode()
-
-#         return context
-
 
 
 class EquipmentIssuanceListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
@@ -460,3 +348,47 @@ class EquipmentIssuanceListView(LoginRequiredMixin, AdminRequiredMixin, ListView
     def get_queryset(self):
         qs = super().get_queryset().select_related("requester", "equipment")
         return qs.filter(status=RentalRequest.Status.APPROVED, rental__isnull=True)
+
+
+class ReturnEquipmentView(LoginRequiredMixin, AdminRequiredMixin, FormView):
+    model = Rental
+    form_class = ReturnEquipmentForm
+    template_name = "rentals/return_equipment.html"
+
+    def get_success_url(self):
+        return reverse("rentals:active_rentals")
+
+    def get_object(self, queryset=None):
+        return Rental.objects.select_related("equipment", "issued_to").get(
+            pk=self.kwargs["pk"]
+        )
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().post(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Template expects `rental`.
+        context["rental"] = getattr(self, "object", None) or self.get_object()
+        return context
+
+    def form_valid(self, form):
+        try:
+            return_equipment(
+                rental=self.object,
+                returned_by=self.request.user,
+                condition_on_return=form.cleaned_data["condition_on_return"],
+                notes=form.cleaned_data.get("notes", ""),
+            )
+            messages.success(self.request, "Equipment returned successfully.")
+            return super().form_valid(form)
+        except (InvalidRentalStateError, RentalAlreadyReturnedError) as e:
+            messages.error(self.request, str(e))
+            return self.form_invalid(form)
+
+

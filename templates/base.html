@@ -4,7 +4,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}IERMS - ICT Equipment Rental Management System{% endblock title %}</title>
+    <title>{% block title %}{{ system_name }} | {{ organization_name }}{% endblock title %}</title>
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -402,8 +403,9 @@
                   <div class="d-flex align-items-center justify-content-center rounded" style="width: 32px; height: 32px; background-color: var(--primary);">
                     <i class="bi bi-cpu text-white"></i>
                   </div>
-                  <span class="fw-bold lh-1">FUD-IERMS</span>
+                  <span class="fw-bold lh-1">{{ short_system_name }}</span>
                 </a>
+
 
                 <div class="ms-auto"></div>
 
@@ -556,8 +558,10 @@
         <!-- Footer -->
         <footer class="py-4 mt-auto">
           <div class="container text-center">
-            <p class="text-muted mb-1">&copy; 2026 Federal University Dutse. All rights reserved.</p>
-            <small class="text-white-50 bg-secondary px-2 py-1 rounded">ICT Equipment Rental Management System</small>
+            <p class="text-muted mb-1">{{ copyright_text }}. All rights reserved.</p>
+
+            <small class="text-white-50 bg-secondary px-2 py-1 rounded">{{ system_name }}</small>
+
           </div>
         </footer>
       </div>

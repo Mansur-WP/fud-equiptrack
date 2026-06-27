@@ -51,7 +51,17 @@ urlpatterns = [
 # Media serving is intentionally NOT enabled in production.
 # On Render, user uploads should be stored via a real media storage strategy.
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(
+        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+    )
+
+
+
+# Custom error pages
+handler404 = "config.views.custom_404"
+
+
+
 
 
 

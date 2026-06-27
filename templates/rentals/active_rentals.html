@@ -36,32 +36,39 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Equipment</th>
+                            <th>Rental ID</th>
                             <th>Borrower</th>
+                            <th>Equipment</th>
+                            <th>Quantity</th>
                             <th>Issued Date</th>
-                            <th>Expected Return</th>
-                            <th>Qty</th>
+                            <th>Expected Return Date</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for rental in rentals %}
                         <tr>
+                            <td>#{{ rental.id }}</td>
+                            <td>{{ rental.issued_to.get_full_name|default:rental.issued_to.username }}</td>
                             <td>{{ rental.equipment.name }}</td>
-                            <td>{{ rental.issued_to.username }}</td>
+                            <td>{{ rental.quantity }}</td>
                             <td>{{ rental.issued_date }}</td>
                             <td>{{ rental.expected_return_date }}</td>
-                            <td>{{ rental.quantity }}</td>
                             <td>
                                 <span class="badge {% if rental.status == 'ACTIVE' %}bg-success{% elif rental.status == 'OVERDUE' %}bg-danger{% else %}bg-secondary{% endif %}">
                                     {{ rental.get_status_display }}
                                 </span>
                             </td>
                             <td>
-                                <a href="{% url 'rentals:rental_detail' rental.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                                {% if rental.status == 'ACTIVE' %}
+                                  <a href="{% url 'rentals:return_equipment' rental.pk %}" class="btn btn-sm btn-primary">Return Equipment</a>
+                                {% else %}
+                                  <span class="text-muted">—</span>
+                                {% endif %}
                             </td>
                         </tr>
+
                         {% empty %}
                         <tr>
                             <td colspan="7" class="text-center py-4 text-muted">No rentals found.</td>

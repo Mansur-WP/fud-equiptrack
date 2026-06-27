@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Return Equipment{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1">Return Equipment</h2>
+      <p class="text-muted mb-0">ICT Officer inspection → Admin processes return.</p>
+    </div>
+    <a href="{% url 'rentals:active_rentals' %}" class="btn btn-outline-secondary">Back to Active Rentals</a>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h5 class="mb-3">Rental</h5>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="text-muted mb-1">Borrower</div>
+          <div class="fw-semibold">{{ rental.issued_to.get_full_name|default:rental.issued_to.username }}</div>
+          <div class="text-muted">{{ rental.issued_to.email }}</div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="text-muted mb-1">Equipment</div>
+          <div class="fw-semibold">{{ rental.equipment.name }}</div>
+          <div class="text-muted">Serial: {{ rental.equipment.serial_number }}</div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="text-muted mb-1">Quantity</div>
+          <div class="fw-semibold">{{ rental.quantity }}</div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="text-muted mb-1">Issued Date</div>
+          <div class="fw-semibold">{{ rental.issued_date }}</div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="text-muted mb-1">Expected Return Date</div>
+          <div class="fw-semibold">{{ rental.expected_return_date }}</div>
+        </div>
+      </div>
+
+      <hr class="my-4" />
+
+      <h5 class="mb-3">Condition on Return</h5>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label class="form-label">{{ form.condition_on_return.label }}</label>
+          {{ form.condition_on_return }}
+          {% if form.condition_on_return.errors %}
+            <div class="text-danger small mt-1">{{ form.condition_on_return.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">{{ form.notes.label }}</label>
+          {{ form.notes }}
+          {% if form.notes.errors %}
+            <div class="text-danger small mt-1">{{ form.notes.errors }}</div>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Return Equipment</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

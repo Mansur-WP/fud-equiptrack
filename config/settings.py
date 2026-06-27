@@ -109,10 +109,12 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "accounts.context_processors.branding",
             ],
         },
     },
 ]
+
 
 WSGI_APPLICATION = "config.wsgi.application"
 
@@ -198,6 +200,20 @@ AUTH_USER_MODEL = "accounts.User"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
+# Branding (centralized template configuration)
+SYSTEM_NAME = "ICT Equipment Rental Management System"
+
+SHORT_SYSTEM_NAME = "FUD EquipTrack"
+
+ORGANIZATION_NAME = "Federal University Dutse ICT Centre"
+
+SYSTEM_DESCRIPTION = (
+    "A secure platform for requesting, issuing, tracking, "
+    "and managing ICT equipment."
+)
+
+COPYRIGHT_TEXT = "© 2026 Federal University Dutse ICT Centre"
+
 # Logging
 LOGGING = {
     "version": 1,
@@ -212,4 +228,5 @@ LOGGING = {
         "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
     },
 }
+
 

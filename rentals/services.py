@@ -41,7 +41,9 @@ def approve_request(rental_request: RentalRequest, remarks: str = "") -> RentalR
     # Update request status
     rental_request.status = RentalRequest.Status.APPROVED
     rental_request.remarks = remarks
-    rental_request.save(update_fields=["status", "remarks", "updated_at"])
+    rental_request.approved_date = timezone.now().date()
+    rental_request.save(update_fields=["status", "remarks", "approved_date", "updated_at"])
+
 
     return rental_request
 
@@ -141,9 +143,9 @@ class RentalAlreadyReturnedError(Exception):
     """Raised when attempting to return equipment for a rental that's already returned."""
 
 
-
 class InvalidRentalStateError(Exception):
     """Raised when attempting to return equipment in an invalid rental state."""
+
 
 
 @transaction.atomic
@@ -176,20 +178,22 @@ def return_equipment(
             % {"status": rental.status}
         )
 
-    # Prevent duplicate returns (OneToOneField already enforces this at DB level,
-    # but we validate explicitly for business rule clarity).
-    if hasattr(rental, "returns_record"):
-        raise RentalAlreadyReturnedError(_("This rental has already been returned."))
+    # Prevent duplicate returns.
+    # NOTE: reverse OneToOne accessor (rental.returns_record) raises DoesNotExist
+    # when missing, so we must check existence via the Return model.
+    from .models import Return
 
-    # Also handle case where returns_record relation isn't cached.
-    if rental.returns_record.exists():  # type: ignore[attr-defined]
-        raise RentalAlreadyReturnedError(_("This rental has already been returned."))
+    if Return.objects.filter(rental=rental).exists():
+        raise RentalAlreadyReturnedError(
+            _("This rental has already been returned.")
+        )
 
-    # Lock equipment row as well (even though select_related fetched it, we need DB lock).
+    # Lock equipment row as well (even though select_related fetched it,
+    # we need DB lock).
     equipment = Equipment.objects.select_for_update().get(pk=rental.equipment_id)
 
+
     # Create return record first, then update inventory + rental state.
-    Return = __import__("rentals.models", fromlist=["Return"]).Return  # avoid circular/static reordering
     Return.objects.create(
         rental=rental,
         returned_by=returned_by,
@@ -199,6 +203,7 @@ def return_equipment(
     )
 
     equipment.available_quantity += rental.quantity
+
     equipment.save(update_fields=["available_quantity", "updated_at"])
 
     rental.status = Rental.Status.RETURNED

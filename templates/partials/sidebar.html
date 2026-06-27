@@ -53,15 +53,23 @@ Uses:
         </a>
 
         {% if user.is_authenticated %}
-          <a class="nav-link px-3 py-2 rounded d-flex align-items-center gap-3 text-white {% if 'admin_request_management' in current_path %}active bg-primary{% endif %}"
-             href="{% url 'rentals:admin_request_management' %}"
-             style="{% if 'rentals' not in current_path or 'pending' in current_path %}color: #94A3B8 !important;{% endif %} font-weight: 500;">
-            <i class="bi bi-card-checklist"></i>
-            <span>Request Management</span>
-          </a>
-
           {% if user.role|upper == 'ADMIN' %}
+            <a class="nav-link px-3 py-2 rounded d-flex align-items-center gap-3 text-white {% if 'admin_request_management' in current_path %}active bg-primary{% endif %}"
+               href="{% url 'rentals:admin_request_management' %}"
+               style="{% if 'rentals' not in current_path or 'pending' in current_path %}color: #94A3B8 !important;{% endif %} font-weight: 500;">
+              <i class="bi bi-card-checklist"></i>
+              <span>Request Management</span>
+            </a>
+
             <div class="mt-4 mb-2 text-uppercase text-secondary fw-semibold px-3" style="font-size: 0.7rem; letter-spacing: 0.05em; color: #64748B !important;">Management</div>
+
+            <a class="nav-link px-3 py-2 rounded d-flex align-items-center gap-3 text-white {% if 'rentals/active/' in current_path or 'active_rentals' in current_path %}active bg-primary{% endif %}"
+               href="{% url 'rentals:active_rentals' %}"
+               style="{% if 'rentals/active/' not in current_path and 'active_rentals' not in current_path %}color: #94A3B8 !important;{% endif %} font-weight: 500;">
+              <i class="bi bi-arrow-left-right"></i>
+              <span>Active Rentals</span>
+            </a>
+
             <a class="nav-link px-3 py-2 rounded d-flex align-items-center gap-3 text-white {% if 'rentals/pending' in current_path %}active bg-primary{% endif %}" 
                href="{% url 'rentals:pending_list' %}"
                style="{% if 'rentals/pending' not in current_path %}color: #94A3B8 !important;{% endif %} font-weight: 500;">

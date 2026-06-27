@@ -19,6 +19,12 @@ urlpatterns = [
         views.AdminRequestManagementListView.as_view(),
         name="admin_request_management",
     ),
+    path(
+        "active/<int:pk>/return/",
+        views.ReturnEquipmentView.as_view(),
+        name="return_equipment",
+    ),
 ]
+
 
 

@@ -20,9 +20,11 @@
             <th class="border-0 px-4 py-3 text-secondary" style="font-size: 0.75rem; text-transform: uppercase;">Student / Staff</th>
             <th class="border-0 px-4 py-3 text-secondary" style="font-size: 0.75rem; text-transform: uppercase;">Equipment</th>
             <th class="border-0 px-4 py-3 text-secondary" style="font-size: 0.75rem; text-transform: uppercase;">Quantity</th>
+            <th class="border-0 px-4 py-3 text-secondary" style="font-size: 0.75rem; text-transform: uppercase;">Approved Date</th>
             <th class="border-0 px-4 py-3 text-secondary" style="font-size: 0.75rem; text-transform: uppercase;">Expected Return Date</th>
             <th class="border-0 px-4 py-3 text-secondary text-end" style="font-size: 0.75rem; text-transform: uppercase;">Action</th>
           </tr>
+
         </thead>
         <tbody>
           {% if requests %}
@@ -32,10 +34,12 @@
               <td class="px-4 py-3 text-dark fw-medium">{{ req.requester.get_full_name|default:req.requester.username }}</td>
               <td class="px-4 py-3 fw-medium text-dark">{{ req.equipment.name }}</td>
               <td class="px-4 py-3 text-muted">{{ req.quantity }}</td>
+              <td class="px-4 py-3 text-muted">{{ req.approved_date|date:"M d, Y" }}</td>
               <td class="px-4 py-3 text-muted">{{ req.expected_return_date|date:"M d, Y" }}</td>
               <td class="px-4 py-3 text-end">
                 <a href="{% url 'rentals:issue' req.pk %}" class="btn btn-sm btn-primary">Issue Equipment</a>
               </td>
+
             </tr>
             {% endfor %}
           {% else %}

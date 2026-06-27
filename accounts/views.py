@@ -161,46 +161,65 @@ class AdminDashboardPlaceholderView(LoginRequiredMixin, UserPassesTestMixin, Tem
         # Rentals / Issued equipment
         from rentals.models import Rental, RentalRequest
 
-        context["issued_equipment"] = Rental.objects.filter(
-            status__in=(Rental.Status.ACTIVE, Rental.Status.OVERDUE)
+        # Card KPIs (live counts)
+        context["pending_requests_count"] = RentalRequest.objects.filter(
+            status=RentalRequest.Status.PENDING
         ).count()
-        context["active_rentals"] = Rental.objects.filter(
+
+        # “Not yet issued” means: approved requests that do NOT have a related Rental row.
+        # Rental has OneToOneField(rental_request=RentalRequest) with related_name='rental'.
+        context["approved_requests_not_issued_count"] = RentalRequest.objects.filter(
+            status=RentalRequest.Status.APPROVED
+        ).filter(rental__isnull=True).count()
+
+        context["equipment_awaiting_issuance_count"] = context[
+            "approved_requests_not_issued_count"
+        ]
+
+        context["active_rentals_count"] = Rental.objects.filter(
             status=Rental.Status.ACTIVE
         ).count()
-        context["returned_rentals"] = Rental.objects.filter(
+
+        context["returned_rentals_count"] = Rental.objects.filter(
             status=Rental.Status.RETURNED
         ).count()
+
+        # Extra (used by existing UI variables; keep them for now)
         context["overdue_rentals"] = Rental.objects.filter(
             status=Rental.Status.OVERDUE
         ).count()
 
-        # Returns model/table may not exist in this DB state; compute safely.
-        # "Returned Rentals" is still available from Rental.status.
-        context["total_returns"] = context["returned_rentals"]
+        # Recent Activity (live lists)
+        context["recent_requests"] = (
+            RentalRequest.objects.select_related("requester", "equipment")
+            .order_by("-created_at")[:5]
+        )
 
+        context["recent_rentals"] = (
+            Rental.objects.select_related(
+                "equipment",
+                "issued_to",
+                "issued_by",
+                "rental_request",
+            )
+            .order_by("-issued_date", "-created_at")[:5]
+        )
 
-        # Rental Requests
-        context["total_requests"] = RentalRequest.objects.count()
-        context["pending_requests"] = RentalRequest.objects.filter(status=RentalRequest.Status.PENDING).count()
-        context["approved_requests"] = RentalRequest.objects.filter(status=RentalRequest.Status.APPROVED).count()
-        context["rejected_requests"] = RentalRequest.objects.filter(status=RentalRequest.Status.REJECTED).count()
+        context["recent_returns"] = (
+            Rental.objects.filter(status=Rental.Status.RETURNED)
+            .select_related("equipment", "issued_to", "issued_by")
+            .order_by("-updated_at", "-created_at")[:5]
+        )
 
-        # Recent Activity
-        context["recent_registered_users"] = User.objects.order_by("-created_at")[:5]
-        context["recent_equipment_added"] = Equipment.objects.order_by("-created_at")[:5]
+        # Recent equipment requests (used by the admin dashboard UI)
         context["recent_rental_requests"] = (
             RentalRequest.objects.select_related("requester", "equipment")
             .order_by("-created_at")[:5]
         )
-        context["recent_equipment_issued"] = (
-            Rental.objects.select_related("equipment", "issued_to", "issued_by", "rental_request")
-            .order_by("-issued_date")[:5]
-        )
-        # Return table may not exist in this DB state.
-        context["recent_equipment_returned"] = []
-
 
         return context
+
+
 
 
 

@@ -10,6 +10,7 @@ class RentalRequest(models.Model):
         APPROVED = "APPROVED", "Approved"
         REJECTED = "REJECTED", "Rejected"
 
+
     requester = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -31,8 +32,13 @@ class RentalRequest(models.Model):
         db_index=True,
     )
     remarks = models.TextField(blank=True)
+
+    # Set when an admin approves a request (approval does NOT issue equipment).
+    approved_date = models.DateField(null=True, blank=True, db_index=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
 
     def __str__(self) -> str:
         return f"{self.requester} → {self.equipment} ({self.get_status_display()})"

@@ -2,7 +2,8 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from accounts.forms import BootstrapFormMixin
-from .models import RentalRequest
+
+from .models import RentalRequest, Return
 
 
 class RentalRequestForm(BootstrapFormMixin, forms.ModelForm):
@@ -62,6 +63,35 @@ class AdminRemarksForm(BootstrapFormMixin, forms.Form):
     """Form for admins to leave remarks when approving or rejecting requests."""
 
     remarks = forms.CharField(
-        widget=forms.Textarea(attrs={"rows": 4, "placeholder": "Enter any optional remarks or reasons..."}),
+        widget=forms.Textarea(
+            attrs={
+                "rows": 4,
+                "placeholder": "Enter any optional remarks or reasons...",
+            }
+        ),
         required=False,
     )
+
+
+class ReturnEquipmentForm(BootstrapFormMixin, forms.Form):
+    """Form for administrators to process an equipment return."""
+
+    condition_on_return = forms.ChoiceField(
+        choices=Return.Condition.choices,
+        widget=forms.Select(attrs={
+            "class": "form-select",
+        }),
+        label="Condition on Return",
+    )
+
+    notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 4,
+                "placeholder": "Optional notes during inspection...",
+            }
+        ),
+        label="Notes",
+    )
+
