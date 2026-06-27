@@ -25,13 +25,26 @@ def _env_bool(name: str, default: bool = False) -> bool:
     return val.lower() in {"1", "true", "yes", "on"}
 
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# Render/production should set DJANGO_SECRET_KEY.
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or "insecure-local-dev-secret-key-CHANGE-ME-TO-A-LONG-RANDOM-VALUE"
-
-
 # SECURITY WARNING: don't run with debug turned on in production!
+# For local development we default to True for a better developer experience.
 DEBUG = _env_bool("DJANGO_DEBUG", True)
+
+
+# SECURITY WARNING: keep the secret key used in production secret!
+# Production must provide DJANGO_SECRET_KEY and we fail fast if missing.
+_secret_key = os.getenv("DJANGO_SECRET_KEY")
+if not _secret_key:
+    if DEBUG:
+        # Safe development default only (never used in production).
+        SECRET_KEY = "insecure-local-dev-secret-key-CHANGE-ME-TO-A-LONG-RANDOM-VALUE"
+    else:
+        raise RuntimeError(
+            "DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is false "
+            "(production mode)."
+        )
+else:
+    SECRET_KEY = _secret_key
+
 
 ALLOWED_HOSTS = [
     h.strip()
@@ -59,12 +72,22 @@ CSRF_TRUSTED_ORIGINS = [
 CSRF_COOKIE_SECURE = _env_bool("DJANGO_CSRF_COOKIE_SECURE", not DEBUG)
 SESSION_COOKIE_SECURE = _env_bool("DJANGO_SESSION_COOKIE_SECURE", not DEBUG)
 SECURE_SSL_REDIRECT = _env_bool("DJANGO_SECURE_SSL_REDIRECT", not DEBUG)
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
 
-SECURE_HSTS_SECONDS = 0 if DEBUG else int(os.getenv("DJANGO_SECURE_HSTS_SECONDS", "31536000"))
+SECURE_HSTS_SECONDS = (
+    0
+    if DEBUG
+    else int(os.getenv("DJANGO_SECURE_HSTS_SECONDS", "31536000"))
+)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = _env_bool(
     "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", not DEBUG
 )
 SECURE_HSTS_PRELOAD = _env_bool("DJANGO_SECURE_HSTS_PRELOAD", False)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True

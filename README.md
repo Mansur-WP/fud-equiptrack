@@ -235,6 +235,31 @@ http://127.0.0.1:8000/
 
 ---
 
+## 🧪 Environment setup
+
+### 1) Create a `.env` file
+
+```bash
+# copy the example env file
+# Windows (PowerShell)
+Copy-Item .env.example .env
+
+# or Windows (cmd)
+copy .env.example .env
+
+# Linux/macOS
+cp .env.example .env
+```
+
+Edit `.env` as needed.
+
+### 2) Notes about development vs production
+
+- **Development (default):** `DJANGO_DEBUG=true` and `SECRET_KEY` uses a safe default.
+- **Production:** set `DJANGO_DEBUG=false` and provide `DJANGO_SECRET_KEY` via environment variables.
+
+---
+
 ## 🧪 Running Tests
 
 Run Django system checks
@@ -248,6 +273,7 @@ Run project tests
 ```bash
 python manage.py test
 ```
+
 
 ---
 

@@ -3,10 +3,13 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core.exceptions import ValidationError
 
 from .models import User
+from .upload_validation import validate_image_upload
+
 
 
 
 class BootstrapFormMixin:
+
     """Mixin to automatically apply Bootstrap 5 form classes to form fields."""
 
     def __init__(self, *args, **kwargs):
@@ -76,10 +79,20 @@ class UserUpdateForm(BootstrapFormMixin, forms.ModelForm):
             "profile_image",
         )
 
+    def clean_profile_image(self):
+        img = self.cleaned_data.get("profile_image")
+        validate_image_upload(img, field_name="profile_image")
+        return img
+
+
+
+
+
 
 class LoginForm(BootstrapFormMixin, AuthenticationForm):
     """Custom login form that applies Bootstrap styling."""
     pass
+
 
 
 

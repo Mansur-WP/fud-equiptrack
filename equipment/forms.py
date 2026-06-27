@@ -1,9 +1,13 @@
 from django import forms
+
 from accounts.forms import BootstrapFormMixin
 from .models import Equipment
 
+from .upload_validation import validate_image_upload
+
 
 class EquipmentForm(BootstrapFormMixin, forms.ModelForm):
+
     class Meta:
         model = Equipment
         fields = (
@@ -17,3 +21,9 @@ class EquipmentForm(BootstrapFormMixin, forms.ModelForm):
             "image",
             "status",
         )
+
+    def clean_image(self):
+        img = self.cleaned_data.get("image")
+        validate_image_upload(img, field_name="image")
+        return img
+
