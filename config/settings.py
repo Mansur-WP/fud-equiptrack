@@ -64,6 +64,8 @@ CSRF_TRUSTED_ORIGINS = [
     if o.strip()
 ]
 
+DJANGO_ALLOWED_HOST = [fud-equiptrack-production.up.railway.app]
+
 
 # Security cookies / HTTPS / proxy (Render terminates TLS at the edge)
 CSRF_COOKIE_SECURE = _env_bool("DJANGO_CSRF_COOKIE_SECURE", not DEBUG)
