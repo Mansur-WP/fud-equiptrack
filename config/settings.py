@@ -64,7 +64,6 @@ CSRF_TRUSTED_ORIGINS = [
     if o.strip()
 ]
 
-DJANGO_ALLOWED_HOST = "fud-equiptrack-production.up.railway.app"
                 
 
 
