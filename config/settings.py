@@ -64,7 +64,8 @@ CSRF_TRUSTED_ORIGINS = [
     if o.strip()
 ]
 
-DJANGO_ALLOWED_HOST = [fud-equiptrack-production.up.railway.app]
+DJANGO_ALLOWED_HOST = "fud-equiptrack-production.up.railway.app"
+                
 
 
 # Security cookies / HTTPS / proxy (Render terminates TLS at the edge)
