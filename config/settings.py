@@ -46,19 +46,15 @@ else:
     SECRET_KEY = _secret_key
 
 
+# Allowed hosts
 ALLOWED_HOSTS = [
-   os.environ.get(
-    "DJANGO_ALLOWED_HOSTS",
-    "localhost,127.0.0.1"
-).split(",")
+    host.strip()
+    for host in os.environ.get(
+        "DJANGO_ALLOWED_HOSTS",
+        "localhost,127.0.0.1,0.0.0.0,testserver",
+    ).split(",")
+    if host.strip()
 ]
-if not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
-
-
-# For local commands allow typical hosts
-if DEBUG and not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ["127.0.0.1", "localhost", "0.0.0.0", "testserver"]
 
 
 # CSRF
@@ -111,14 +107,16 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     # WhiteNoise should be high in the chain.
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -145,6 +143,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Database (Render provides DATABASE_URL)
 # Never leave Django without a default database.
+# Database
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -153,15 +152,15 @@ DATABASES = {
 }
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-if DATABASE_URL:
-    try:
-        import dj_database_url
 
-        DATABASES["default"] = dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=True,
-        )
+if DATABASE_URL:
+    import dj_database_url
+
+    DATABASES["default"] = dj_database_url.config(
+        default=DATABASE_URL,
+        conn_max_age=600,
+        ssl_require=True,
+    )
 
     except Exception:
         # Fallback: do not crash management commands if parser isn't available.
