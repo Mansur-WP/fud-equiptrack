@@ -6,8 +6,7 @@ from . import views
 app_name = "reports"
 
 urlpatterns = [
-    # Placeholder route (no models/views implemented yet)
-    path("", views.placeholder, name="placeholder"),
+    path("", views.placeholder, name="index"),
 ]
 
 

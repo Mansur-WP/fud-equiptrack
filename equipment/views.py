@@ -72,6 +72,19 @@ class EquipmentCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateVie
         messages.success(self.request, "Equipment added successfully.")
         return reverse("equipment:detail", kwargs={"pk": self.object.pk})
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        from activitylog.services import log_activity, get_client_ip
+        from activitylog.models import ActivityLog
+        log_activity(
+            user=self.request.user,
+            action=ActivityLog.ActionType.EQUIPMENT_ADDED,
+            description=f"Added equipment: {self.object.name} ({self.object.serial_number})",
+            target_object=self.object,
+            ip_address=get_client_ip(self.request)
+        )
+        return response
+
 
 class EquipmentUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Equipment
@@ -83,6 +96,19 @@ class EquipmentUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateVie
         messages.success(self.request, "Equipment updated successfully.")
         return reverse("equipment:detail", kwargs={"pk": self.object.pk})
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        from activitylog.services import log_activity, get_client_ip
+        from activitylog.models import ActivityLog
+        log_activity(
+            user=self.request.user,
+            action=ActivityLog.ActionType.EQUIPMENT_UPDATED,
+            description=f"Updated equipment: {self.object.name} ({self.object.serial_number})",
+            target_object=self.object,
+            ip_address=get_client_ip(self.request)
+        )
+        return response
+
 
 class EquipmentDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Equipment
@@ -92,3 +118,20 @@ class EquipmentDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteVie
     def get_success_url(self):
         messages.success(self.request, "Equipment deleted successfully.")
         return reverse("equipment:list")
+
+    def form_valid(self, form):
+        from activitylog.services import log_activity, get_client_ip
+        from activitylog.models import ActivityLog
+        
+        name = self.object.name
+        serial = self.object.serial_number
+        
+        response = super().form_valid(form)
+        
+        log_activity(
+            user=self.request.user,
+            action=ActivityLog.ActionType.EQUIPMENT_DELETED,
+            description=f"Deleted equipment: {name} ({serial})",
+            ip_address=get_client_ip(self.request)
+        )
+        return response

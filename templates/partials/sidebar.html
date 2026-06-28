@@ -83,6 +83,18 @@ Uses:
               <i class="bi bi-box-arrow-right"></i>
               <span>Equipment Issuance</span>
             </a>
+
+            <a class="nav-link px-3 py-2 rounded d-flex align-items-center gap-3 text-white {% if request.resolver_match.app_name == 'accounts' and request.resolver_match.url_name != 'dashboard' %}active bg-primary{% endif %}" href="{% url 'accounts:manage_user_list' %}">
+                <i class="bi bi-people-fill"></i> <span>User Management</span>
+            </a>
+
+            <a class="nav-link px-3 py-2 rounded d-flex align-items-center gap-3 text-white {% if request.resolver_match.app_name == 'activitylog' %}active bg-primary{% endif %}" href="{% url 'activitylog:log_list' %}">
+                <i class="bi bi-journal-text"></i> <span>Activity Log</span>
+            </a>
+
+            <a class="nav-link px-3 py-2 rounded d-flex align-items-center gap-3 text-white {% if request.resolver_match.app_name == 'reports' %}active bg-primary{% endif %}" href="{% url 'reports:index' %}">
+                <i class="bi bi-file-earmark-bar-graph-fill"></i> <span>Reports</span>
+            </a>
           {% endif %}
         {% endif %}
       </nav>

@@ -98,6 +98,25 @@ class LoginForm(BootstrapFormMixin, AuthenticationForm):
     """Custom login form that applies Bootstrap styling."""
     pass
 
+class UserManagementUpdateForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = User
+        fields = (
+            "role",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "phone",
+            "faculty",
+            "department",
+            "is_active",
+        )
 
-
-
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if email:
+            qs = User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise ValidationError("This email is already in use by another account.")
+        return email

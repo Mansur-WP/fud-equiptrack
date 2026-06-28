@@ -132,6 +132,11 @@
                 {% endif %}
               </label>
               {{ field }}
+              {% if field.name == 'password' %}
+                <div class="mt-2 text-end">
+                    <a href="{% url 'accounts:password_reset' %}" class="text-decoration-none small text-primary">Forgot Password?</a>
+                </div>
+              {% endif %}
               {% if field.help_text %}
                 <div class="form-text text-secondary small">{{ field.help_text }}</div>
               {% endif %}

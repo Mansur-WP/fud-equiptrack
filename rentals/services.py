@@ -4,6 +4,8 @@ from django.utils.translation import gettext as _
 
 from equipment.models import Equipment
 from .models import RentalRequest, Rental
+from activitylog.services import log_activity
+from activitylog.models import ActivityLog
 
 
 class InvalidRequestStateError(Exception):
@@ -18,18 +20,10 @@ class RequestAlreadyProcessedError(InvalidRequestStateError):
 
 
 @transaction.atomic
-def approve_request(rental_request: RentalRequest, remarks: str = "") -> RentalRequest:
+def approve_request(rental_request: RentalRequest, remarks: str = "", performed_by=None) -> RentalRequest:
     """
     Approve a rental request.
-    
-    Checks if the request is PENDING, deducts the requested quantity from the 
-    equipment's available_quantity, sets status to APPROVED, and saves remarks.
-    
-    Raises:
-        RequestAlreadyProcessedError: If the request is not PENDING.
-        InvalidRequestStateError: If the equipment does not have enough available quantity.
     """
-    # Lock the rental request and equipment rows to prevent race conditions
     rental_request = RentalRequest.objects.select_for_update().get(pk=rental_request.pk)
     equipment = rental_request.equipment
 
@@ -38,27 +32,27 @@ def approve_request(rental_request: RentalRequest, remarks: str = "") -> RentalR
             _("Cannot approve request: it has already been processed (Status: %(status)s).") % {"status": rental_request.status}
         )
 
-    # Update request status
     rental_request.status = RentalRequest.Status.APPROVED
     rental_request.remarks = remarks
     rental_request.approved_date = timezone.now().date()
     rental_request.save(update_fields=["status", "remarks", "approved_date", "updated_at"])
 
+    if performed_by:
+        log_activity(
+            user=performed_by,
+            action=ActivityLog.ActionType.RENTAL_APPROVED,
+            description=f"Approved rental request #{rental_request.pk} for {equipment.name}",
+            target_object=rental_request
+        )
 
     return rental_request
 
 
 @transaction.atomic
-def reject_request(rental_request: RentalRequest, remarks: str = "") -> RentalRequest:
+def reject_request(rental_request: RentalRequest, remarks: str = "", performed_by=None) -> RentalRequest:
     """
     Reject a rental request.
-    
-    Checks if the request is PENDING, sets status to REJECTED, and saves remarks.
-    
-    Raises:
-        RequestAlreadyProcessedError: If the request is not PENDING.
     """
-    # Lock the rental request row
     rental_request = RentalRequest.objects.select_for_update().get(pk=rental_request.pk)
 
     if rental_request.status != RentalRequest.Status.PENDING:
@@ -69,6 +63,14 @@ def reject_request(rental_request: RentalRequest, remarks: str = "") -> RentalRe
     rental_request.status = RentalRequest.Status.REJECTED
     rental_request.remarks = remarks
     rental_request.save(update_fields=["status", "remarks", "updated_at"])
+
+    if performed_by:
+        log_activity(
+            user=performed_by,
+            action=ActivityLog.ActionType.RENTAL_REJECTED,
+            description=f"Rejected rental request #{rental_request.pk} for {rental_request.equipment.name}",
+            target_object=rental_request
+        )
 
     return rental_request
 
@@ -135,6 +137,13 @@ def issue_equipment(rental_request: RentalRequest, issued_by, notes: str = "") -
 
     equipment.available_quantity -= rental_request.quantity
     equipment.save(update_fields=["available_quantity", "updated_at"])
+
+    log_activity(
+        user=issued_by,
+        action=ActivityLog.ActionType.EQUIPMENT_ISSUED,
+        description=f"Issued {rental_request.quantity}x {equipment.name} to {rental_request.requester.username}",
+        target_object=rental
+    )
 
     return rental
 
@@ -208,6 +217,13 @@ def return_equipment(
 
     rental.status = Rental.Status.RETURNED
     rental.save(update_fields=["status", "updated_at"])
+
+    log_activity(
+        user=returned_by,
+        action=ActivityLog.ActionType.EQUIPMENT_RETURNED,
+        description=f"Returned {rental.quantity}x {equipment.name} (Condition: {condition_on_return})",
+        target_object=rental
+    )
 
 
 def get_admin_dashboard_stats() -> dict:

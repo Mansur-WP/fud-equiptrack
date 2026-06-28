@@ -73,8 +73,21 @@ class RentalRequestCreateView(
     def form_valid(self, form):
         form.instance.requester = self.request.user
         form.instance.status = RentalRequest.Status.PENDING
+        response = super().form_valid(form)
+        
+        from activitylog.services import log_activity, get_client_ip
+        from activitylog.models import ActivityLog
+        
+        log_activity(
+            user=self.request.user,
+            action=ActivityLog.ActionType.RENTAL_REQUEST_CREATED,
+            description=f"Requested {form.instance.quantity}x {form.instance.equipment.name}",
+            target_object=self.object,
+            ip_address=get_client_ip(self.request)
+        )
+        
         messages.success(self.request, "Equipment request submitted successfully.")
-        return super().form_valid(form)
+        return response
 
     def form_invalid(self, form):
         messages.error(self.request, "Please correct the errors below.")
@@ -137,7 +150,7 @@ class ApproveRequestView(BaseRequestActionView):
 
     def form_valid(self, form):
         try:
-            approve_request(self.object, remarks=form.cleaned_data["remarks"])
+            approve_request(self.object, remarks=form.cleaned_data["remarks"], performed_by=self.request.user)
             messages.success(
                 self.request,
                 f"Request for {self.object.equipment.name} has been approved.",
@@ -156,7 +169,7 @@ class RejectRequestView(BaseRequestActionView):
 
     def form_valid(self, form):
         try:
-            reject_request(self.object, remarks=form.cleaned_data["remarks"])
+            reject_request(self.object, remarks=form.cleaned_data["remarks"], performed_by=self.request.user)
             messages.success(
                 self.request,
                 f"Request for {self.object.equipment.name} has been rejected.",

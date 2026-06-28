@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}User Detail - {{ user_obj.username }} | {{ system_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">User Profile</h1>
+    <div>
+        <a href="{% url 'accounts:manage_user_list' %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-2"></i>Back to Users
+        </a>
+        <a href="{% url 'accounts:manage_user_edit' user_obj.pk %}" class="btn btn-primary">
+            <i class="bi bi-pencil me-2"></i>Edit User
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center py-5">
+                {% if user_obj.profile_image %}
+                    <img src="{{ user_obj.profile_image.url }}" class="rounded-circle mb-3 img-thumbnail shadow-sm" style="width: 150px; height: 150px; object-fit: cover;" alt="{{ user_obj.username }}">
+                {% else %}
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3 shadow-sm" style="width: 150px; height: 150px; font-size: 3rem;">
+                        {{ user_obj.username|slice:":1"|upper }}
+                    </div>
+                {% endif %}
+                
+                <h4 class="mb-1">{{ user_obj.get_full_name|default:user_obj.username }}</h4>
+                <p class="text-muted mb-3">@{{ user_obj.username }}</p>
+                
+                <div class="mb-3">
+                    {% if user_obj.role == 'ADMIN' %}
+                        <span class="badge bg-danger">Administrator</span>
+                    {% elif user_obj.role == 'STAFF' %}
+                        <span class="badge bg-primary">Staff</span>
+                    {% else %}
+                        <span class="badge bg-success">Student</span>
+                    {% endif %}
+                    
+                    {% if user_obj.is_active %}
+                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Active</span>
+                    {% else %}
+                        <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Suspended</span>
+                    {% endif %}
+                </div>
+                
+                <hr>
+                
+                <div class="mt-4">
+                    <form method="post" action="{% url 'accounts:manage_user_toggle_status' user_obj.pk %}" class="d-inline" onsubmit="return confirm('Are you sure you want to {% if user_obj.is_active %}suspend{% else %}activate{% endif %} this user?');">
+                        {% csrf_token %}
+                        {% if user_obj.is_active %}
+                            <button type="submit" class="btn btn-outline-danger w-100" {% if user_obj == request.user %}disabled title="You cannot suspend yourself"{% endif %}>
+                                <i class="bi bi-person-x me-2"></i>Suspend User
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn btn-outline-success w-100">
+                                <i class="bi bi-person-check me-2"></i>Activate User
+                            </button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 font-weight-bold">Contact & Academic Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Email</div>
+                    <div class="col-sm-8 fw-medium">{{ user_obj.email }}</div>
+                </div>
+                <hr class="my-2">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Phone Number</div>
+                    <div class="col-sm-8 fw-medium">{{ user_obj.phone|default:"Not provided" }}</div>
+                </div>
+                <hr class="my-2">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Faculty</div>
+                    <div class="col-sm-8 fw-medium">{{ user_obj.faculty|default:"Not provided" }}</div>
+                </div>
+                <hr class="my-2">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Department</div>
+                    <div class="col-sm-8 fw-medium">{{ user_obj.department|default:"Not provided" }}</div>
+                </div>
+                <hr class="my-2">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Date Joined</div>
+                    <div class="col-sm-8 fw-medium">{{ user_obj.created_at|date:"F j, Y, g:i a" }}</div>
+                </div>
+                <hr class="my-2">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Last Login</div>
+                    <div class="col-sm-8 fw-medium">{{ user_obj.last_login|date:"F j, Y, g:i a"|default:"Never" }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rental Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-3 col-6 mb-3 mb-md-0">
+                <div class="card border-primary h-100 text-center py-2">
+                    <div class="card-body px-2">
+                        <div class="h3 mb-0 text-primary fw-bold">{{ total_requests }}</div>
+                        <div class="small text-muted text-uppercase fw-bold">Requests</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3 mb-md-0">
+                <div class="card border-success h-100 text-center py-2">
+                    <div class="card-body px-2">
+                        <div class="h3 mb-0 text-success fw-bold">{{ active_rentals_count }}</div>
+                        <div class="small text-muted text-uppercase fw-bold">Active</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3 mb-md-0">
+                <div class="card border-secondary h-100 text-center py-2">
+                    <div class="card-body px-2">
+                        <div class="h3 mb-0 text-secondary fw-bold">{{ total_rentals }}</div>
+                        <div class="small text-muted text-uppercase fw-bold">Total Rentals</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3 mb-md-0">
+                <div class="card border-danger h-100 text-center py-2">
+                    <div class="card-body px-2">
+                        <div class="h3 mb-0 text-danger fw-bold">{{ overdue_rentals_count }}</div>
+                        <div class="small text-muted text-uppercase fw-bold">Overdue</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Active Rentals -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 font-weight-bold">Active Rentals</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Equipment</th>
+                                <th>Issued</th>
+                                <th>Expected Return</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rental in active_rentals %}
+                            <tr>
+                                <td>{{ rental.equipment.name }} <span class="badge bg-secondary ms-1">Qty: {{ rental.quantity }}</span></td>
+                                <td>{{ rental.issued_date|date:"M d, Y" }}</td>
+                                <td>
+                                    {{ rental.expected_return_date|date:"M d, Y" }}
+                                    {% if rental.status == 'OVERDUE' %}
+                                        <span class="badge bg-danger ms-1">Overdue</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted py-3">No active rentals</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Rental Requests -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 font-weight-bold">Recent Rental Requests</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Equipment</th>
+                                <th>Date Requested</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in recent_requests %}
+                            <tr>
+                                <td>{{ req.equipment.name }} <span class="badge bg-secondary ms-1">Qty: {{ req.quantity }}</span></td>
+                                <td>{{ req.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if req.status == 'PENDING' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% elif req.status == 'APPROVED' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted py-3">No recent requests</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rental History -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 font-weight-bold">Rental History (Last 10)</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Equipment</th>
+                                <th>Issued</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rental in rental_history %}
+                            <tr>
+                                <td>{{ rental.equipment.name }} <span class="badge bg-secondary ms-1">Qty: {{ rental.quantity }}</span></td>
+                                <td>{{ rental.issued_date|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if rental.status == 'RETURNED' %}
+                                        <span class="badge bg-success">Returned</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ rental.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted py-3">No rental history</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

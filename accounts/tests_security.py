@@ -135,22 +135,22 @@ class ReportsPlaceholderAuthorizationTests(TestCase):
         self.client = Client()
 
     def test_anonymous_redirected(self):
-        resp = self.client.get(reverse("reports:placeholder"))
+        resp = self.client.get(reverse("reports:index"))
         self.assertEqual(resp.status_code, 302)
 
     def test_student_denied(self):
         self.client.force_login(self.student)
-        resp = self.client.get(reverse("reports:placeholder"))
+        resp = self.client.get(reverse("reports:index"))
         self.assertEqual(resp.status_code, 403)
 
     def test_staff_denied(self):
         self.client.force_login(self.staff)
-        resp = self.client.get(reverse("reports:placeholder"))
+        resp = self.client.get(reverse("reports:index"))
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_allowed(self):
         self.client.force_login(self.admin)
-        resp = self.client.get(reverse("reports:placeholder"))
+        resp = self.client.get(reverse("reports:index"))
         self.assertEqual(resp.status_code, 200)
 
 

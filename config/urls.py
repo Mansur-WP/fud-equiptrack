@@ -45,7 +45,10 @@ urlpatterns = [
         'reports/',
         include(('reports.urls', 'reports'), namespace='reports'),
     ),
-
+    path(
+        'activity/',
+        include(('activitylog.urls', 'activitylog'), namespace='activitylog'),
+    ),
 ]
 
 # Media serving is intentionally NOT enabled in production.
