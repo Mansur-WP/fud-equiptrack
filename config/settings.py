@@ -52,8 +52,9 @@ ALLOWED_HOSTS = [
         "localhost,127.0.0.1,testserver"
     ).split(",")
     if host.strip()
-]
 
+]
+print("ALLOWED_HOSTS =", ALLOWED_HOSTS)
 
 # CSRF
 CSRF_TRUSTED_ORIGINS = [
