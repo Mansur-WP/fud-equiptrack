@@ -109,9 +109,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    # WhiteNoise should be high in the chain.
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    # WhiteNoise must be directly after SecurityMiddleware.
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",

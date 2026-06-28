@@ -26,7 +26,6 @@ class Equipment(models.Model):
         max_length=50,
         choices=Category.choices,
         default=Category.LAPTOP,
-        db_index=True,
     )
     description = models.TextField(blank=True)
     serial_number = models.CharField(max_length=100, unique=True)
@@ -46,7 +45,6 @@ class Equipment(models.Model):
         max_length=50,
         choices=Status.choices,
         default=Status.AVAILABLE,
-        db_index=True,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -1,3 +1,5 @@
+import io
+from PIL import Image
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
@@ -25,15 +27,13 @@ class ProfileImageUploadValidationTests(TestCase):
         )
 
     def test_accept_valid_png(self):
-        png_bytes = (
-            b"\x89PNG\r\n\x1a\n"
-            b"\x00\x00\x00\rIHDR"
-            b"\x00\x00\x00\x01\x00\x00\x00\x01"
-            b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89"
-            b"\x00\x00\x00\x0cIDATx\x9cc\x00\x01"
-            b"\x00\x00\x05\x00\x01\r\x0a\x2d\xb4"
-            b"\x00\x00\x00\x00IEND\xaeB`\x82"
-        )
+        def generate_valid_png():
+            f = io.BytesIO()
+            image = Image.new("RGB", (10, 10), color=(0, 255, 0))
+            image.save(f, "PNG")
+            return f.getvalue()
+            
+        png_bytes = generate_valid_png()
         upload = make_uploaded_image(
             filename="avatar.png",
             payload=png_bytes,

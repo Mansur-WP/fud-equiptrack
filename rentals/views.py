@@ -116,11 +116,10 @@ class PendingRequestsListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
         return qs.filter(status=RentalRequest.Status.PENDING)
 
 
-class ApproveRequestView(
+class BaseRequestActionView(
     LoginRequiredMixin, AdminRequiredMixin, SingleObjectMixin, FormView
 ):
     model = RentalRequest
-    template_name = "rentals/approve_request.html"
     form_class = AdminRemarksForm
     context_object_name = "rental_request"
 
@@ -131,6 +130,10 @@ class ApproveRequestView(
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         return super().post(request, *args, **kwargs)
+
+
+class ApproveRequestView(BaseRequestActionView):
+    template_name = "rentals/approve_request.html"
 
     def form_valid(self, form):
         try:
@@ -148,21 +151,8 @@ class ApproveRequestView(
         return reverse("rentals:pending_list")
 
 
-class RejectRequestView(
-    LoginRequiredMixin, AdminRequiredMixin, SingleObjectMixin, FormView
-):
-    model = RentalRequest
+class RejectRequestView(BaseRequestActionView):
     template_name = "rentals/reject_request.html"
-    form_class = AdminRemarksForm
-    context_object_name = "rental_request"
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
         try:
@@ -236,19 +226,8 @@ class RentalDetailView(LoginRequiredMixin, DetailView):
         return qs
 
 
-class IssueEquipmentView(LoginRequiredMixin, AdminRequiredMixin, SingleObjectMixin, FormView):
-    model = RentalRequest
+class IssueEquipmentView(BaseRequestActionView):
     template_name = "rentals/issue_equipment.html"
-    form_class = AdminRemarksForm
-    context_object_name = "rental_request"
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
         try:

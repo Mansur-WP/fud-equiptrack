@@ -1,3 +1,5 @@
+import io
+from PIL import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 
@@ -11,10 +13,13 @@ def make_uploaded_image(filename: str, *, content_type: str = "image/png", paylo
 
 class EquipmentImageUploadValidationTests(TestCase):
     def test_accept_valid_png(self):
-        # Minimal valid PNG (1x1 transparent)
-        png_bytes = (
-            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\x0cIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\x0a\x2d\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
-        )
+        def generate_valid_png():
+            f = io.BytesIO()
+            image = Image.new("RGB", (10, 10), color=(0, 0, 255))
+            image.save(f, "PNG")
+            return f.getvalue()
+            
+        png_bytes = generate_valid_png()
         upload = make_uploaded_image("eq.png", payload=png_bytes)
 
         eq = Equipment(

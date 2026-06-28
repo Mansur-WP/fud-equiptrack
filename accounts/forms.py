@@ -60,6 +60,11 @@ class RegisterForm(BootstrapFormMixin, UserCreationForm):
             (User.Role.STAFF.value, User.Role.STAFF.label),
         ]
 
+    def clean_profile_image(self):
+        img = self.cleaned_data.get("profile_image")
+        validate_image_upload(img, field_name="profile_image")
+        return img
+
     def clean_email(self):
         email = self.cleaned_data.get("email")
         if email and User.objects.filter(email__iexact=email).exists():

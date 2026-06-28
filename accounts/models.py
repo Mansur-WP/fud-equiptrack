@@ -20,8 +20,8 @@ class User(AbstractUser):
     )
 
     phone = models.CharField(max_length=20, blank=True, db_index=True)
-    faculty = models.CharField(max_length=255, blank=True, db_index=True)
-    department = models.CharField(max_length=255, blank=True, db_index=True)
+    faculty = models.CharField(max_length=255, blank=True)
+    department = models.CharField(max_length=255, blank=True)
     profile_image = models.ImageField(
         upload_to="profile_images/",
         blank=True,
@@ -45,7 +45,4 @@ class User(AbstractUser):
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["role"]),
-            models.Index(fields=["phone"]),
-            models.Index(fields=["faculty"]),
-            models.Index(fields=["department"]),
         ]

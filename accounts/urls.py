@@ -33,7 +33,6 @@ urlpatterns = [
         views.StaffDashboardPlaceholderView.as_view(),
         name="staff_dashboard",
     ),
-
 ]
 
 

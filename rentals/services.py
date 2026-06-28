@@ -209,3 +209,50 @@ def return_equipment(
     rental.status = Rental.Status.RETURNED
     rental.save(update_fields=["status", "updated_at"])
 
+
+def get_admin_dashboard_stats() -> dict:
+    """Gather key statistics for the admin dashboard."""
+    from accounts.models import User
+    from equipment.models import Equipment
+    from rentals.models import Rental, RentalRequest
+    
+    stats = {
+        "total_users": User.objects.count(),
+        "total_students": User.objects.filter(role=User.Role.STUDENT).count(),
+        "total_staff": User.objects.filter(role=User.Role.STAFF).count(),
+        "total_administrators": User.objects.filter(role=User.Role.ADMIN).count(),
+        
+        "total_equipment": Equipment.objects.count(),
+        "available_equipment": Equipment.objects.filter(status=Equipment.Status.AVAILABLE).count(),
+        "equipment_under_maintenance": Equipment.objects.filter(status=Equipment.Status.MAINTENANCE).count(),
+        
+        "pending_requests_count": RentalRequest.objects.filter(status=RentalRequest.Status.PENDING).count(),
+        "approved_requests_not_issued_count": RentalRequest.objects.filter(
+            status=RentalRequest.Status.APPROVED, rental__isnull=True
+        ).count(),
+        "active_rentals_count": Rental.objects.filter(status=Rental.Status.ACTIVE).count(),
+        "returned_rentals_count": Rental.objects.filter(status=Rental.Status.RETURNED).count(),
+        "overdue_rentals": Rental.objects.filter(status=Rental.Status.OVERDUE).count(),
+    }
+    stats["equipment_awaiting_issuance_count"] = stats["approved_requests_not_issued_count"]
+
+    stats["recent_requests"] = (
+        RentalRequest.objects.select_related("requester", "equipment")
+        .order_by("-created_at")[:5]
+    )
+
+    stats["recent_rentals"] = (
+        Rental.objects.select_related("equipment", "issued_to", "issued_by", "rental_request")
+        .order_by("-issued_date", "-created_at")[:5]
+    )
+
+    stats["recent_returns"] = (
+        Rental.objects.filter(status=Rental.Status.RETURNED)
+        .select_related("equipment", "issued_to", "issued_by")
+        .order_by("-updated_at", "-created_at")[:5]
+    )
+
+    stats["recent_rental_requests"] = stats["recent_requests"]
+
+    return stats
+

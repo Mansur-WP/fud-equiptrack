@@ -29,7 +29,6 @@ class RentalRequest(models.Model):
         max_length=20,
         choices=Status.choices,
         default=Status.PENDING,
-        db_index=True,
     )
     remarks = models.TextField(blank=True)
 
@@ -47,8 +46,6 @@ class RentalRequest(models.Model):
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["status"]),
-            models.Index(fields=["requester"]),
-            models.Index(fields=["equipment"]),
             models.Index(fields=["request_date"]),
         ]
 
@@ -85,7 +82,6 @@ class Rental(models.Model):
         max_length=20,
         choices=Status.choices,
         default=Status.ACTIVE,
-        db_index=True,
     )
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -100,7 +96,6 @@ class Rental(models.Model):
         ordering = ["-issued_date", "-created_at"]
         indexes = [
             models.Index(fields=["status"]),
-            models.Index(fields=["issued_to"]),
             models.Index(fields=["expected_return_date"]),
         ]
 
@@ -117,20 +112,16 @@ class Return(models.Model):
         Rental,
         on_delete=models.CASCADE,
         related_name="returns_record",
-
-        db_index=True,
     )
     returned_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="returns",
-        db_index=True,
     )
     return_date = models.DateField()
     condition_on_return = models.CharField(
         max_length=20,
         choices=Condition.choices,
-        db_index=True,
     )
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -146,8 +137,6 @@ class Return(models.Model):
         verbose_name_plural = "Returns"
         ordering = ["-return_date", "-created_at"]
         indexes = [
-            models.Index(fields=["rental"]),
-            models.Index(fields=["returned_by"]),
             models.Index(fields=["return_date"]),
             models.Index(fields=["condition_on_return"]),
         ]

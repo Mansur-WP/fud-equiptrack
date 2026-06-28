@@ -104,12 +104,9 @@ class ProfileView(LoginRequiredMixin, UpdateView):
 
 
 # Dashboard Views
-from equipment.models import Equipment
 from rentals.models import RentalRequest
 
-
 class DashboardDispatcherView(LoginRequiredMixin, TemplateView):
-    """Single entry point for routing users to the correct dashboard."""
 
     # Never render a template.
     template_name = "accounts/student_dashboard.html"
@@ -143,108 +140,47 @@ class AdminDashboardPlaceholderView(LoginRequiredMixin, UserPassesTestMixin, Tem
             user.is_superuser or user.role == User.Role.ADMIN
         )
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # Users
-        context["total_users"] = User.objects.count()
-        context["total_students"] = User.objects.filter(role=User.Role.STUDENT).count()
-        context["total_staff"] = User.objects.filter(role=User.Role.STAFF).count()
-        context["total_administrators"] = User.objects.filter(role=User.Role.ADMIN).count()
-
-        # Equipment
-        context["total_equipment"] = Equipment.objects.count()
-        context["available_equipment"] = Equipment.objects.filter(status=Equipment.Status.AVAILABLE).count()
-        context["equipment_under_maintenance"] = Equipment.objects.filter(status=Equipment.Status.MAINTENANCE).count()
-
-        # Rentals / Issued equipment
-        from rentals.models import Rental, RentalRequest
-
-        # Card KPIs (live counts)
-        context["pending_requests_count"] = RentalRequest.objects.filter(
-            status=RentalRequest.Status.PENDING
-        ).count()
-
-        # “Not yet issued” means: approved requests that do NOT have a related Rental row.
-        # Rental has OneToOneField(rental_request=RentalRequest) with related_name='rental'.
-        context["approved_requests_not_issued_count"] = RentalRequest.objects.filter(
-            status=RentalRequest.Status.APPROVED
-        ).filter(rental__isnull=True).count()
-
-        context["equipment_awaiting_issuance_count"] = context[
-            "approved_requests_not_issued_count"
-        ]
-
-        context["active_rentals_count"] = Rental.objects.filter(
-            status=Rental.Status.ACTIVE
-        ).count()
-
-        context["returned_rentals_count"] = Rental.objects.filter(
-            status=Rental.Status.RETURNED
-        ).count()
-
-        # Extra (used by existing UI variables; keep them for now)
-        context["overdue_rentals"] = Rental.objects.filter(
-            status=Rental.Status.OVERDUE
-        ).count()
-
-        # Recent Activity (live lists)
-        context["recent_requests"] = (
-            RentalRequest.objects.select_related("requester", "equipment")
-            .order_by("-created_at")[:5]
-        )
-
-        context["recent_rentals"] = (
-            Rental.objects.select_related(
-                "equipment",
-                "issued_to",
-                "issued_by",
-                "rental_request",
-            )
-            .order_by("-issued_date", "-created_at")[:5]
-        )
-
-        context["recent_returns"] = (
-            Rental.objects.filter(status=Rental.Status.RETURNED)
-            .select_related("equipment", "issued_to", "issued_by")
-            .order_by("-updated_at", "-created_at")[:5]
-        )
-
-        # Recent equipment requests (used by the admin dashboard UI)
-        context["recent_rental_requests"] = (
-            RentalRequest.objects.select_related("requester", "equipment")
-            .order_by("-created_at")[:5]
-        )
-
+        from rentals.services import get_admin_dashboard_stats
+        context.update(get_admin_dashboard_stats())
         return context
 
 
+class BaseRoleDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        from rentals.models import RentalRequest
+        
+        context["active_rentals_count"] = RentalRequest.objects.filter(
+            requester=user, status=RentalRequest.Status.APPROVED
+        ).count()
+        
+        context["pending_requests_count"] = RentalRequest.objects.filter(
+            requester=user, status=RentalRequest.Status.PENDING
+        ).count()
+        
+        context["active_rentals"] = RentalRequest.objects.select_related('equipment').filter(
+            requester=user, status=RentalRequest.Status.APPROVED
+        ).order_by('-updated_at')[:5]
+        
+        return context
 
-
-
-class StudentDashboardPlaceholderView(LoginRequiredMixin, TemplateView):
+class StudentDashboardPlaceholderView(BaseRoleDashboardView):
     template_name = "accounts/student_dashboard.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def test_func(self):
         user = self.request.user
-        context["active_rentals_count"] = RentalRequest.objects.filter(requester=user, status=RentalRequest.Status.APPROVED).count()
-        context["pending_requests_count"] = RentalRequest.objects.filter(requester=user, status=RentalRequest.Status.PENDING).count()
-        context["active_rentals"] = RentalRequest.objects.filter(requester=user, status=RentalRequest.Status.APPROVED).order_by('-updated_at')[:5]
-        return context
+        return user.is_authenticated and user.role == User.Role.STUDENT
 
 
-class StaffDashboardPlaceholderView(LoginRequiredMixin, TemplateView):
+class StaffDashboardPlaceholderView(BaseRoleDashboardView):
     template_name = "accounts/staff_dashboard.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def test_func(self):
         user = self.request.user
-        context["active_rentals_count"] = RentalRequest.objects.filter(requester=user, status=RentalRequest.Status.APPROVED).count()
-        context["pending_requests_count"] = RentalRequest.objects.filter(requester=user, status=RentalRequest.Status.PENDING).count()
-        context["active_rentals"] = RentalRequest.objects.filter(requester=user, status=RentalRequest.Status.APPROVED).order_by('-updated_at')[:5]
-        return context
+        return user.is_authenticated and user.role == User.Role.STAFF
 
 
 
