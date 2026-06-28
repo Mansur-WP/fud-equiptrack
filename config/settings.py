@@ -10,10 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from pathlib import Path
-
 import os
-
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -49,9 +47,9 @@ else:
 # Allowed hosts
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.environ.get(
+    for host in os.getenv(
         "DJANGO_ALLOWED_HOSTS",
-        "localhost,127.0.0.1,0.0.0.0,testserver",
+        "localhost,127.0.0.1,testserver"
     ).split(",")
     if host.strip()
 ]
@@ -64,31 +62,32 @@ CSRF_TRUSTED_ORIGINS = [
     if o.strip()
 ]
 
-                
 
+# Security cookies / HTTPS / proxy
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+else:
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_HSTS_SECONDS = 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
 
-# Security cookies / HTTPS / proxy (Render terminates TLS at the edge)
-CSRF_COOKIE_SECURE = _env_bool("DJANGO_CSRF_COOKIE_SECURE", not DEBUG)
-SESSION_COOKIE_SECURE = _env_bool("DJANGO_SESSION_COOKIE_SECURE", not DEBUG)
-SECURE_SSL_REDIRECT = _env_bool("DJANGO_SECURE_SSL_REDIRECT", not DEBUG)
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 
-SECURE_HSTS_SECONDS = (
-    0
-    if DEBUG
-    else int(os.getenv("DJANGO_SECURE_HSTS_SECONDS", "31536000"))
-)
-SECURE_HSTS_INCLUDE_SUBDOMAINS = _env_bool(
-    "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", not DEBUG
-)
-SECURE_HSTS_PRELOAD = _env_bool("DJANGO_SECURE_HSTS_PRELOAD", False)
-SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = "DENY"
-
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+X_FRAME_OPTIONS = "DENY"
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
@@ -108,16 +107,14 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    # WhiteNoise should be high in the chain.
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-]
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -138,12 +135,9 @@ TEMPLATES = [
     },
 ]
 
-
 WSGI_APPLICATION = "config.wsgi.application"
 
 
-# Database (Render provides DATABASE_URL)
-# Never leave Django without a default database.
 # Database
 DATABASES = {
     "default": {
@@ -160,22 +154,7 @@ if DATABASE_URL:
     DATABASES["default"] = dj_database_url.config(
         default=DATABASE_URL,
         conn_max_age=600,
-        ssl_require=True,
     )
-
-    except Exception:
-        # Fallback: do not crash management commands if parser isn't available.
-        DATABASES["default"] = {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("DB_NAME"),
-            "USER": os.getenv("DB_USER"),
-
-            "PASSWORD": os.getenv("DB_PASSWORD"),
-            "HOST": os.getenv("DB_HOST"),
-            "PORT": os.getenv("DB_PORT", "5432"),
-            "CONN_MAX_AGE": 600,
-            "OPTIONS": {"sslmode": "require"},
-        }
 
 
 # Password validation
@@ -226,17 +205,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Branding (centralized template configuration)
 SYSTEM_NAME = "ICT Equipment Rental Management System"
-
 SHORT_SYSTEM_NAME = "FUD EquipTrack"
-
 ORGANIZATION_NAME = "Federal University Dutse ICT Centre"
-
 SYSTEM_DESCRIPTION = (
     "A secure platform for requesting, issuing, tracking, "
     "and managing ICT equipment."
 )
-
 COPYRIGHT_TEXT = "© 2026 Federal University Dutse ICT Centre"
+
 
 # Logging
 LOGGING = {
@@ -252,5 +228,3 @@ LOGGING = {
         "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
     },
 }
-
-
