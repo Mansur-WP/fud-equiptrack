@@ -26,7 +26,6 @@ urlpatterns = [
         TemplateView.as_view(template_name="home.html"),
         name="home",
     ),
-    path('admin/', admin.site.urls),
 
     path(
         'accounts/',
@@ -50,6 +49,10 @@ urlpatterns = [
         include(('activitylog.urls', 'activitylog'), namespace='activitylog'),
     ),
 ]
+
+# Only expose Django admin in development
+if settings.DEBUG:
+    urlpatterns += [path('admin/', admin.site.urls)]
 
 # Media serving is intentionally NOT enabled in production.
 # On Render, user uploads should be stored via a real media storage strategy.
