@@ -196,9 +196,15 @@ USE_TZ = True
 # Static files
 # Static & Media Files
 
+_cloudinary_configured = bool(os.environ.get("CLOUDINARY_CLOUD_NAME"))
+
 STORAGES = {
     "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        "BACKEND": (
+            "cloudinary_storage.storage.MediaCloudinaryStorage"
+            if _cloudinary_configured
+            else "django.core.files.storage.FileSystemStorage"
+        ),
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
@@ -207,12 +213,9 @@ STORAGES = {
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
-
-# Media files
-MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 

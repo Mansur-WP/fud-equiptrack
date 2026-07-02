@@ -1,19 +1,22 @@
 {% load static %}
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{{ system_name }} - {{ short_system_name }}</title>
+    <title>{{ organization_name }} | {{ system_name }}</title>
 
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        crossorigin="anonymous" />
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
@@ -158,68 +161,78 @@
             padding: 3rem 0;
             margin-top: auto;
         }
-        
+
         @media (max-width: 992px) {
             .hero-title {
                 font-size: 2.5rem;
             }
+
             .hero-section {
                 padding: 60px 0 40px;
             }
         }
     </style>
 </head>
+
 <body>
 
     <!-- Navbar -->
     <nav class="navbar-landing">
         <div class="container d-flex justify-content-between align-items-center">
             <a href="/" class="d-flex align-items-center gap-3 text-decoration-none">
-                <div class="brand-logo">
-                    <i class="bi bi-cpu"></i>
-                </div>
-                    <span class="fw-bold fs-5 text-dark">{{ short_system_name }}</span>
-
+                <img src="{% static 'admin/img/FUD-Logo.jpg' %}" alt="FUD Logo"
+                    style="height: 40px; border-radius: 4px;">
+                <span class="fw-bold fs-5 text-dark">{{ short_system_name }}</span>
             </a>
             <div class="d-flex gap-3">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'accounts:dashboard' %}" class="btn-custom btn-primary-custom d-flex align-items-center">Go to Dashboard</a>
+                <a href="{% url 'accounts:dashboard' %}"
+                    class="btn-custom btn-primary-custom d-flex align-items-center">Go to Dashboard</a>
                 {% else %}
-                    <a href="{% url 'accounts:login' %}" class="btn-custom btn-outline-custom d-none d-sm-flex align-items-center">Sign In</a>
-                    <a href="{% url 'accounts:register' %}" class="btn-custom btn-primary-custom d-flex align-items-center">Get Started</a>
+                <a href="{% url 'accounts:login' %}"
+                    class="btn-custom btn-outline-custom d-none d-sm-flex align-items-center">Sign In</a>
+                <a href="{% url 'accounts:register' %}"
+                    class="btn-custom btn-primary-custom d-flex align-items-center">Get Started</a>
                 {% endif %}
             </div>
         </div>
     </nav>
 
     {% if messages %}
-      <div class="container mt-4">
+    <div class="container mt-4">
         <div class="row justify-content-center">
-          <div class="col-12 col-md-8 col-lg-6">
-            {% for message in messages %}
-              <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
-                <div class="d-flex align-items-center gap-2">
-                  {% if message.tags == 'success' %}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
-                      <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                    </svg>
-                  {% elif message.tags == 'error' or message.tags == 'danger' %}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
-                      <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
-                    </svg>
-                  {% else %}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
-                      <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
-                    </svg>
-                  {% endif %}
-                  <span>{{ message }}</span>
+            <div class="col-12 col-md-8 col-lg-6">
+                {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm"
+                    role="alert">
+                    <div class="d-flex align-items-center gap-2">
+                        {% if message.tags == 'success' %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                            class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                            <path
+                                d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
+                        </svg>
+                        {% elif message.tags == 'error' or message.tags == 'danger' %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                            class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                            <path
+                                d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2" />
+                        </svg>
+                        {% else %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                            class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                            <path
+                                d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2" />
+                        </svg>
+                        {% endif %}
+                        <span>{{ message }}</span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
-            {% endfor %}
-          </div>
+                {% endfor %}
+            </div>
         </div>
-      </div>
+    </div>
     {% endif %}
 
     <!-- Hero -->
@@ -227,35 +240,43 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-7 py-5">
-                    <div class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill mb-4 fw-semibold" style="font-size: 0.85rem;">
-                        {{ organization_name }}
+                    <div class="mb-4">
+                        <img src="{% static 'admin/img/FUD-Logo.jpg' %}" alt="FUD Logo"
+                            style="height: 80px; border-radius: 8px;">
                     </div>
 
-                    <h1 class="hero-title">
-                        IC Equipment Rental <br><span>Management</span> System.
+                    <h1 class="hero-title" style="font-size: 2.5rem; text-transform: uppercase;">
+                        {{ organization_name }}
                     </h1>
+                    <h3 class="mb-4 fw-bold" style="color: var(--primary);">
+                        {{ system_name }}
+                    </h3>
                     <p class="hero-subtitle">
-                        Seamlessly request, manage, and track university ICT equipment. A unified platform for Students, Staff, and Administrators to handle operations efficiently.
+                        {{ system_description }}
                     </p>
                     <div class="d-flex flex-wrap gap-3">
                         {% if user.is_authenticated %}
-                            <a href="{% url 'accounts:dashboard' %}" class="btn-custom btn-primary-custom fs-5 d-flex align-items-center gap-2">
-                                Open Dashboard <i class="bi bi-arrow-right"></i>
-                            </a>
+                        <a href="{% url 'accounts:dashboard' %}"
+                            class="btn-custom btn-primary-custom fs-5 d-flex align-items-center gap-2">
+                            Open Dashboard <i class="bi bi-arrow-right"></i>
+                        </a>
                         {% else %}
-                            <a href="{% url 'accounts:register' %}" class="btn-custom btn-primary-custom fs-5 d-flex align-items-center gap-2">
-                                Start Requesting <i class="bi bi-arrow-right"></i>
-                            </a>
-                            <a href="{% url 'accounts:login' %}" class="btn-custom btn-outline-custom fs-5 d-flex align-items-center">
-                                Sign In
-                            </a>
+                        <a href="{% url 'accounts:register' %}"
+                            class="btn-custom btn-primary-custom fs-5 d-flex align-items-center gap-2">
+                            Start Requesting <i class="bi bi-arrow-right"></i>
+                        </a>
+                        <a href="{% url 'accounts:login' %}"
+                            class="btn-custom btn-outline-custom fs-5 d-flex align-items-center">
+                            Sign In
+                        </a>
                         {% endif %}
                     </div>
                 </div>
                 <div class="col-lg-5 d-none d-lg-block position-relative">
                     <!-- Abstract geometric representation of a dashboard/equipment -->
                     <div class="position-relative w-100" style="height: 400px;">
-                        <div class="position-absolute shadow" style="background: #fff; border: 1px solid #E2E8F0; border-radius: 16px; width: 80%; height: 60%; top: 10%; right: 0; z-index: 2;">
+                        <div class="position-absolute shadow"
+                            style="background: #fff; border: 1px solid #E2E8F0; border-radius: 16px; width: 80%; height: 60%; top: 10%; right: 0; z-index: 2;">
                             <div class="border-bottom px-3 py-2 d-flex gap-2">
                                 <div class="rounded-circle bg-danger" style="width: 10px; height: 10px;"></div>
                                 <div class="rounded-circle bg-warning" style="width: 10px; height: 10px;"></div>
@@ -270,7 +291,8 @@
                                 <div class="rounded bg-light w-100" style="height: 80px;"></div>
                             </div>
                         </div>
-                        <div class="position-absolute shadow-sm" style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 16px; width: 70%; height: 50%; bottom: 10%; left: 0; z-index: 1;">
+                        <div class="position-absolute shadow-sm"
+                            style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 16px; width: 70%; height: 50%; bottom: 10%; left: 0; z-index: 1;">
                             <div class="p-4 d-flex flex-column gap-2">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="rounded bg-primary w-25" style="height: 40px;"></div>
@@ -296,30 +318,34 @@
     <section class="py-5" style="background-color: #fff;">
         <div class="container py-5">
             <div class="text-center mb-5">
-                <h2 class="fw-bold" style="color: var(--secondary); font-size: 2.25rem;">Everything you need to manage ICT assets</h2>
+                <h2 class="fw-bold" style="color: var(--secondary); font-size: 2.25rem;">Everything you need to manage
+                    ICT assets</h2>
                 <p class="text-muted fs-5">A centralized hub for seamless equipment operations.</p>
             </div>
-            
+
             <div class="row g-4">
                 <div class="col-md-4">
                     <div class="feature-card">
                         <div class="feature-icon"><i class="bi bi-box-seam"></i></div>
                         <h4 class="fw-bold mb-3 fs-5">Inventory Tracking</h4>
-                        <p class="text-muted mb-0">Real-time visibility into all university ICT equipment. Know exactly what's available, in-use, or under maintenance.</p>
+                        <p class="text-muted mb-0">Real-time visibility into all university ICT equipment. Know exactly
+                            what's available, in-use, or under maintenance.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="feature-card">
                         <div class="feature-icon"><i class="bi bi-calendar2-check"></i></div>
                         <h4 class="fw-bold mb-3 fs-5">Simple Requests</h4>
-                        <p class="text-muted mb-0">Students and staff can easily browse available equipment and submit rental requests directly from their dashboards.</p>
+                        <p class="text-muted mb-0">Students and staff can easily browse available equipment and submit
+                            rental requests directly from their dashboards.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="feature-card">
                         <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
                         <h4 class="fw-bold mb-3 fs-5">Approval Workflows</h4>
-                        <p class="text-muted mb-0">Administrators have full control over the approval process, ensuring equipment goes to the right people securely.</p>
+                        <p class="text-muted mb-0">Administrators have full control over the approval process, ensuring
+                            equipment goes to the right people securely.</p>
                     </div>
                 </div>
             </div>
@@ -329,16 +355,19 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container text-center">
-            <div class="brand-logo mx-auto mb-3" style="width: 48px; height: 48px; font-size: 1.5rem;">
-                <i class="bi bi-cpu"></i>
-            </div>
-            <h5 class="fw-bold mb-3">{{ short_system_name }}</h5>
-            <p class="text-secondary mb-0">{{ copyright_text }}. All rights reserved.</p>
+            <h5 class="fw-bold mb-1">{{ organization_name }}</h5>
+            <p class="mb-3">{{ system_name }}</p>
+
+
+
+            <p class="small mb-0">{{ copyright_text }}. All Rights Reserved.</p>
 
         </div>
     </footer>
 
     <!-- Bootstrap 5 Bundle JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
 </body>
+
 </html>

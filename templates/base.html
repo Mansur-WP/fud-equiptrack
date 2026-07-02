@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}{{ system_name }} | {{ organization_name }}{% endblock title %}</title>
+    <title>{% block title %}{{ organization_name }} | {{ system_name }}{% endblock title %}</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -400,9 +400,7 @@
                 </button>
                 
                 <a class="d-lg-none d-flex align-items-center gap-2 text-dark text-decoration-none ms-2" href="{% url 'home' %}">
-                  <div class="d-flex align-items-center justify-content-center rounded" style="width: 32px; height: 32px; background-color: var(--primary);">
-                    <i class="bi bi-cpu text-white"></i>
-                  </div>
+                  <img src="{% static 'admin/img/FUD-Logo.jpg' %}" alt="FUD Logo" style="height: 32px; border-radius: 4px;">
                   <span class="fw-bold lh-1">{{ short_system_name }}</span>
                 </a>
 
@@ -555,13 +553,19 @@
         <!-- Content Block -->
         {% block content %}{% endblock content %}
 
-        <!-- Footer -->
         <footer class="py-4 mt-auto">
           <div class="container text-center">
-            <p class="text-muted mb-1">{{ copyright_text }}. All rights reserved.</p>
+            <h5 class="fw-bold mb-1">{{ organization_name }}</h5>
+            <p class="text-muted mb-3">{{ system_name }}</p>
+            
+            <div class="mb-3">
+              <p class="mb-0 text-muted small">Developed by:</p>
+              <p class="mb-0 fw-semibold">Mansur Nasir</p>
+              <p class="mb-0 small text-muted">Department of Computer Science</p>
+              <p class="mb-0 small text-muted">Northwest University Kano</p>
+            </div>
 
-            <small class="text-white-50 bg-secondary px-2 py-1 rounded">{{ system_name }}</small>
-
+            <p class="text-muted small mb-0">{{ copyright_text }}. All Rights Reserved.</p>
           </div>
         </footer>
       </div>
