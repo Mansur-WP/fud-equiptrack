@@ -18,7 +18,7 @@
             <div class="col-md-3">
                 <div class="input-group">
                     <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
-                    <input type="text" name="q" class="form-control" placeholder="Search by name, username or email..." value="{{ request.GET.q }}">
+                    <input type="text" name="q" class="form-control" placeholder="Search by name, Registration Number or Staff ID, or email..." value="{{ request.GET.q }}">
                 </div>
             </div>
             
@@ -83,7 +83,7 @@
                                 {% endif %}
                                 <div>
                                     <div class="fw-bold">{{ u.get_full_name|default:u.username }}</div>
-                                    <div class="text-muted small">@{{ u.username }}</div>
+                                    <div class="text-muted small">Registration Number / Staff ID: {{ u.username }}</div>
                                 </div>
                             </div>
                         </td>

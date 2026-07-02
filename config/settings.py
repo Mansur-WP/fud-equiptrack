@@ -16,6 +16,12 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    "API_KEY": os.environ.get("CLOUDINARY_API_KEY"),
+    "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET"),
+}
+
 def _env_bool(name: str, default: bool = False) -> bool:
     val = os.getenv(name)
     if val is None:
@@ -52,9 +58,9 @@ ALLOWED_HOSTS = [
         "localhost,127.0.0.1,testserver"
     ).split(",")
     if host.strip()
+
 ]
-print("DJANGO_ALLOWED_HOSTS:", os.getenv("DJANGO_ALLOWED_HOSTS"))
-print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
+print("ALLOWED_HOSTS =", ALLOWED_HOSTS)
 
 # CSRF
 CSRF_TRUSTED_ORIGINS = [
@@ -106,6 +112,8 @@ INSTALLED_APPS = [
     "rentals",
     "reports",
     "activitylog",
+    "cloudinary",
+    "cloudinary_storage",
 ]
 
 MIDDLEWARE = [
@@ -186,11 +194,22 @@ USE_TZ = True
 
 
 # Static files
-STATIC_URL = "static/"
+# Static & Media Files
+
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Media files
 MEDIA_URL = "media/"
@@ -239,4 +258,9 @@ EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
 EMAIL_USE_TLS = _env_bool("EMAIL_USE_TLS", True)
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "resend")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "onboarding@resend.dev")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@equiptrack.com")
+
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.smtp.EmailBackend",
+)

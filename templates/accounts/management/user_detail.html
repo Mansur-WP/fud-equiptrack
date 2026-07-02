@@ -28,7 +28,7 @@
                 {% endif %}
                 
                 <h4 class="mb-1">{{ user_obj.get_full_name|default:user_obj.username }}</h4>
-                <p class="text-muted mb-3">@{{ user_obj.username }}</p>
+                <p class="text-muted mb-3">Registration Number / Staff ID: {{ user_obj.username }}</p>
                 
                 <div class="mb-3">
                     {% if user_obj.role == 'ADMIN' %}

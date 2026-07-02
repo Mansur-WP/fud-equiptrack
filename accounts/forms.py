@@ -59,6 +59,10 @@ class RegisterForm(BootstrapFormMixin, UserCreationForm):
             (User.Role.STUDENT.value, User.Role.STUDENT.label),
             (User.Role.STAFF.value, User.Role.STAFF.label),
         ]
+        self.fields['username'].label = "Registration Number / Staff ID"
+        self.fields['username'].help_text = "Students should enter their Registration Number. Staff should enter their Staff ID."
+        self.fields['username'].widget.attrs['placeholder'] = "Enter your Registration Number or Staff ID"
+        self.fields['username'].error_messages['required'] = "Registration Number or Staff ID is required"
 
     def clean_profile_image(self):
         img = self.cleaned_data.get("profile_image")
@@ -96,7 +100,12 @@ class UserUpdateForm(BootstrapFormMixin, forms.ModelForm):
 
 class LoginForm(BootstrapFormMixin, AuthenticationForm):
     """Custom login form that applies Bootstrap styling."""
-    pass
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].label = "Registration Number / Staff ID"
+        self.fields['username'].widget.attrs['placeholder'] = "e.g. FUD/CSC/23/0012 or STAFF001"
+        self.fields['username'].error_messages['required'] = "Registration Number or Staff ID is required"
 
 class UserManagementUpdateForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
@@ -120,3 +129,10 @@ class UserManagementUpdateForm(BootstrapFormMixin, forms.ModelForm):
             if qs.exists():
                 raise ValidationError("This email is already in use by another account.")
         return email
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'username' in self.fields:
+            self.fields['username'].label = "Registration Number / Staff ID"
+            self.fields['username'].help_text = "Students should enter their Registration Number. Staff should enter their Staff ID."
+            self.fields['username'].error_messages['required'] = "Registration Number or Staff ID is required"
